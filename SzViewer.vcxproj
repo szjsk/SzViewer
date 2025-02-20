@@ -92,6 +92,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\textviewer\TextSearchDialog.cpp" />
     <ClCompile Include="src\textviewer\TextSettingDialog.cpp" />
     <ClCompile Include="src\textviewer\TextSettingProps.cpp" />
     <ClCompile Include="src\textviewer\TextViewContainer.cpp" />
@@ -104,6 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IJsonSerializable.h" />
+    <QtMoc Include="src\textviewer\TextSearchDialog.h" />
     <ClInclude Include="src\textviewer\TextSettingProps.h" />
     <QtMoc Include="src\textviewer\TextSettingDialog.h" />
     <ClInclude Include="src\StatusStore.h" />

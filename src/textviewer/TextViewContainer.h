@@ -26,6 +26,8 @@ public:
     void nextPage();
     void prevPage();
     void setSettings(const TextSettingProps& s);
+    QHash<long, QVector<QString>>* getTextChunks();
+    void findPage(const QString&, long page, long line);
 
 private:
     static constexpr int G_TEXT_BROWSER_CNT = 2;
@@ -36,7 +38,7 @@ private:
     QTextBrowser* g_textBrowserArray[G_TEXT_BROWSER_CNT];
     QLabel* qSliderInfo;
     QHash<QChar, int> g_charWidthCache;
-    QHash<long, QVector<QString>> textChunks;  // 텍스트 블록 저장
+    QHash<long, QVector<QString>> textChunks;  
     QTimer* resizeTimer;
 
     QTextBrowser* createTextBrowser(); //텍스트뷰 생성

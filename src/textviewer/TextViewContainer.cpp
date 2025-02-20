@@ -73,6 +73,24 @@ void TextViewContainer::loadText(QString& filePath) {
     refreshPage();
 }
 
+void TextViewContainer::findPage(const QString& text, long page, long line) {
+    int browserIndex = 0;
+    if (g_textBrowserArray[1]->isVisible()) {
+		browserIndex = (page % 2);
+    }
+    g_currentPosition = page - browserIndex;
+
+    setPage(g_currentPosition);
+    qSlider->setValue(g_currentPosition + 1);
+
+    QTextCursor cursor(g_textBrowserArray[browserIndex]->document());
+    cursor = g_textBrowserArray[browserIndex]->document()->find(text, cursor);
+    if (!cursor.isNull()) {
+        g_textBrowserArray[browserIndex]->setTextCursor(cursor);
+    }
+
+}
+
 void TextViewContainer::setPage(long position) {
 
     for (int i = 0; i < G_TEXT_BROWSER_CNT; i++) {
@@ -274,4 +292,8 @@ void TextViewContainer::resizeEvent(QResizeEvent* event) {
     //QTimer::singleShot(30, this, [this]() {
        // refreshPage();
     //    });
+}
+
+QHash<long, QVector<QString>>* TextViewContainer::getTextChunks() {
+	return &textChunks;
 }

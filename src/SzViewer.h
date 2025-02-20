@@ -4,6 +4,7 @@
 #include "ui_SzViewer.h"
 #include "textviewer/TextViewContainer.h"
 #include "textviewer/TextSettingDialog.h"
+#include "textviewer/TextSearchDialog.h"
 #include "StatusStore.h"
 
 #include <qfiledialog.h>
@@ -26,6 +27,7 @@ private:
     TextViewContainer* textViewContainer;
     bool isTextFile(const QString& fileName);
     void openFile(QString& fileName);
+    void goToTextPage(const QString& searchText, long page, long line);
 
 protected:
     void resizeEvent(QResizeEvent* event);
@@ -35,5 +37,6 @@ protected:
 private slots:
     void openFileDialog();
     void openFontDialog();
+    void openSearchDialog();
     void updateSettingPreview(const TextSettingProps& settings);
 };

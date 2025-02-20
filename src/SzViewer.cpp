@@ -12,18 +12,22 @@ SzViewer::SzViewer(QWidget *parent)
     setAcceptDrops(true);
 
 
-    QAction* fileOpenDialog = new QAction(QIcon(":/path/to/icon.png"), "File", this);
-    connect(fileOpenDialog, &QAction::triggered, this, &SzViewer::openFileDialog);
-    ui.menuBar->addAction(fileOpenDialog);
+    QAction* fileOpenAction = new QAction(QIcon(":/path/to/icon.png"), "File", this);
+    connect(fileOpenAction, &QAction::triggered, this, &SzViewer::openFileDialog);
+    ui.menuBar->addAction(fileOpenAction);
 
-    QAction* settingDialog = new QAction(QIcon(":/path/to/icon.png"), "Setting", this);
-    connect(settingDialog, &QAction::triggered, this, &SzViewer::openFontDialog);
-    ui.menuBar->addAction(settingDialog);
+    QAction* settingAction = new QAction(QIcon(":/path/to/icon.png"), "Setting", this);
+    connect(settingAction, &QAction::triggered, this, &SzViewer::openFontDialog);
+    ui.menuBar->addAction(settingAction);
 
-    QAction* split = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
+    QAction* searchAction = new QAction(QIcon(":/path/to/icon.png"), "Search", this);
+    connect(searchAction, &QAction::triggered, this, &SzViewer::openSearchDialog);
+    ui.menuBar->addAction(searchAction);
+
+    QAction* splitAction = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
 
     // 클릭 시 동작 정의
-    connect(split, &QAction::triggered, this, [this]() {
+    connect(splitAction, &QAction::triggered, this, [this]() {
 		qDebug() << "Split Clicked";
         TextSettingProps setting = StatusStore::instance().getTextSettings();
         setting.setSplitView(textViewContainer->changeSplitView());
@@ -32,11 +36,29 @@ SzViewer::SzViewer(QWidget *parent)
 
     // 메뉴바에 아이콘 버튼 추가
 
-    ui.menuBar->addAction(split);
+    ui.menuBar->addAction(splitAction);
 }
 
 SzViewer::~SzViewer()
 {
+}
+
+void SzViewer::openSearchDialog()
+{
+
+    TextSearchDialog dialog(this, textViewContainer->getTextChunks());
+    connect(&dialog, &TextSearchDialog::rowSelected, this, &SzViewer::goToTextPage);
+
+    qDebug() << "open Search";
+
+    dialog.exec();
+	qDebug() << "close Search";
+}
+
+void SzViewer::goToTextPage(const QString& searchText, long page, long line)
+{
+	qDebug() << "goToTextPage: " << searchText << " , " << page << " , " << line;
+	textViewContainer->findPage(searchText, page, line);
 }
 
 void SzViewer::openFileDialog()
