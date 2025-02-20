@@ -11,13 +11,10 @@ int main(int argc, char *argv[])
 /*
 
 글꼴
-1. 크기
-2. 볼드/이탤릭/일반
-4. 줄간격
-5. 안티앨라이언싱?
-QFont font("맑은 고딕", 12);
-font.setStyleStrategy(QFont::PreferAntialiasing);
-tb->setFont(font);  // QTextBrowser 또는 QTextEdit에 적용
+-1. 크기
+-2. 볼드/이탤릭/일반
+-4. 줄간격
+-5. 안티앨라이언싱?
 
 화면
 1. 마진
