@@ -35,6 +35,7 @@ private:
     QPushButton* searchButton;
     QTableWidget* resultTable;
     void addResult(const QString& line, long page, long position);
+
 };
 
 #endif // TEXTSEARCHDIALOG_H

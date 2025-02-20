@@ -48,6 +48,7 @@ private:
     void setPage(long position);
     void refreshFont(QTextBrowser* tb);
     void refreshStyle(QTextBrowser* tb);
+    void applyLineSpacing(QTextBrowser* tb);
 
     QSlider* qSlider;
 

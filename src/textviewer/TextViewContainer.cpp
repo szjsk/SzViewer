@@ -62,13 +62,15 @@ void TextViewContainer::loadText(QString& filePath) {
     }
     QElapsedTimer timer;
     timer.start();
-
     QTextStream in(&file);
     g_text = in.readAll();
     file.close();
     qDebug() << "file load time :" << timer.elapsed()/1000 << "s";
 
+    //init
     g_currentPosition = 0;
+    qSlider->setValue(0);
+    qSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
 
     refreshPage();
 }
@@ -101,6 +103,8 @@ void TextViewContainer::setPage(long position) {
             g_textBrowserArray[i]->clear();
             g_textBrowserArray[i]->setPlainText(lines.join(""));
             g_textBrowserArray[i]->moveCursor(QTextCursor::Start);
+
+            applyLineSpacing(g_textBrowserArray[i]);
 
         }
     }
@@ -143,27 +147,41 @@ void TextViewContainer::refreshFont(QTextBrowser* tb) {
     f.setStyleStrategy(QFont::PreferAntialias);
 
     tb->setFont(f);
-    QString docStyle = QString("body { line-height: %1px; }").arg(f.pointSize());
-    tb->document()->setDefaultStyleSheet(docStyle);
-
 }
 
 void TextViewContainer::refreshStyle(QTextBrowser* tb) {
+    QFontMetrics fm(g_settings.getFont());
+    int lineHeight = fm.lineSpacing();
 
     QString style = QString("QTextBrowser { "
         "background-color: %1; "
         "padding: %2px %3px %4px %5px; "
-        "color: %6; "
-        "line-height: %7px; }")
+        "color: %6; }")
         .arg(g_settings.getBackgroundColor().name())
         .arg(g_settings.getPadding().top())
         .arg(g_settings.getPadding().right())
         .arg(g_settings.getPadding().bottom())
         .arg(g_settings.getPadding().left())
         .arg(g_settings.getTextColor().name())
-        .arg(g_settings.getFont().pointSize() * g_settings.getLineSpacing());
-    tb->setStyleSheet(style);
+        ;
 
+    qDebug() << "lineHeight :: " << lineHeight  << ", g_settings.getLineSpacing() ::  " << g_settings.getLineSpacing() << ", height : " << tb->height();
+
+    tb->setStyleSheet(style);
+	applyLineSpacing(tb);
+
+}
+
+void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
+    QFontMetrics fm(tb->font());
+    int lineHeight = fm.lineSpacing() * g_settings.getLineSpacing();
+
+    QTextCursor cursor(tb->document());
+    cursor.select(QTextCursor::Document);
+    QTextBlockFormat blockFormat = cursor.blockFormat();
+    // FixedHeight의 경우 픽셀 단위로 간격을 지정합니다.
+    blockFormat.setLineHeight(lineHeight, QTextBlockFormat::FixedHeight);
+    cursor.setBlockFormat(blockFormat);
 }
 
 void TextViewContainer::refreshPage() {
@@ -179,12 +197,14 @@ void TextViewContainer::refreshPage() {
     QFontMetrics fm(g_textBrowserArray[0]->font());
     int page = 0;
     QVector<QString> lines;
+    qDebug() << "maxLine : " << maxLine << ", maxWidth : " << width;
 
     for (long i = 0; i < g_text.length(); i++) {
 		QChar c = g_text.at(i);
 		line.append(c);
         width += getFontWidth(&fm, c);
         if (c == '\n' || width >= maxWidth) {
+			qDebug() << "lines.size() : " << lines.size() << ", width : " << width << "line : " << line;
             lines.append(line);
 			line.clear();
 			width = 0;
@@ -231,15 +251,23 @@ void TextViewContainer::setSettings(const TextSettingProps& s) {
 
 int TextViewContainer::getLineHeight(QTextBrowser* tb) {
     QFontMetrics fm(tb->font());
-    int lineHeight = fm.lineSpacing();
+    int lineHeight = fm.lineSpacing() * g_settings.getLineSpacing();
 	qDebug() << "lineHeight : " << lineHeight << " , " << fm.ascent();
 
-    return ((tb->height() - (g_settings.getPadding().top()+ g_settings.getPadding().bottom())) / lineHeight) - 3;  // 세로 방향으로 표시 가능한 줄 수
+    return ((tb->height() - (g_settings.getPadding().top()+ g_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
 }
 
 int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
     if (!g_charWidthCache.contains(c)) {
-        int width = fm->horizontalAdvance(c);
+        int width = fm->horizontalAdvance(c); // 글자의 너비
+//        width += fm->leftBearing(c); // 왼쪽 여백
+        width += fm->rightBearing(c); // 오른쪽 여백
+
+        // 탭 간격을 고려
+        if (c == '\t') {
+            width = fm->horizontalAdvance(' ') * 4; // 예: 탭 간격을 4개의 공백으로 설정
+        }
+
         g_charWidthCache.insert(c,width);  // 캐시에 값 저장
     }
     return g_charWidthCache.value(c);

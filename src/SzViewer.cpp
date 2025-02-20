@@ -137,12 +137,8 @@ void SzViewer::openFile(QString& fileName) {
         // 예: 이미지 파일을 처리하는 로직 추가
         // 예를 들면 이미지 뷰어 위젯에 이미지를 표시하는 방식 등이 있을 수 있음.
     }
-    else if (isTextFile(fileName)) {
-        qDebug() << "fileName :: " << fileName;
-        textViewContainer->loadText(fileName);
-    }
     else {
-        qDebug() << "지원하지 않는 파일 형식 :: " << fileName;
+        textViewContainer->loadText(fileName);
     }
 }
 
