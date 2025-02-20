@@ -92,31 +92,26 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="textviewer\TextSettingDialog.cpp" />
-    <ClCompile Include="textviewer\TextSettingProps.cpp" />
-    <ClCompile Include="textviewer\TextViewContainer.cpp" />
-    <QtRcc Include="SzViewer.qrc" />
-    <QtUic Include="SzViewer.ui" />
-    <QtMoc Include="SzViewer.h" />
-    <ClCompile Include="StatusStore.cpp" />
-    <ClCompile Include="SzViewer.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\textviewer\TextSettingDialog.cpp" />
+    <ClCompile Include="src\textviewer\TextSettingProps.cpp" />
+    <ClCompile Include="src\textviewer\TextViewContainer.cpp" />
+    <QtRcc Include="src\SzViewer.qrc" />
+    <QtUic Include="src\SzViewer.ui" />
+    <QtMoc Include="src\SzViewer.h" />
+    <ClCompile Include="src\StatusStore.cpp" />
+    <ClCompile Include="src\SzViewer.cpp" />
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="IJsonSerializable.h" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="textviewer\TextSettingProps.h" />
-    <QtMoc Include="textviewer\TextSettingDialog.h" />
-    <ClInclude Include="StatusStore.h" />
-    <QtMoc Include="textviewer\TextViewContainer.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="SzViewer.rc">
-      <Culture Condition="'$(Configuration)|$(Platform)'=='Release|x64'">0x0412</Culture>
-    </ResourceCompile>
+    <ClInclude Include="src\IJsonSerializable.h" />
+    <ClInclude Include="src\textviewer\TextSettingProps.h" />
+    <QtMoc Include="src\textviewer\TextSettingDialog.h" />
+    <ClInclude Include="src\StatusStore.h" />
+    <QtMoc Include="src\textviewer\TextViewContainer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">

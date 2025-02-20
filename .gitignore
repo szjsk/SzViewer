@@ -9,3 +9,4 @@ SzViewer/
 *.vcxproj.user
 *.qmake.stash
 /SzViewer.vcxproj.filters
+/TextSettingProps.json
