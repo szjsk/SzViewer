@@ -1,4 +1,4 @@
-#ifndef TEXTSEARCHDIALOG_H
+ï»¿#ifndef TEXTSEARCHDIALOG_H
 #define TEXTSEARCHDIALOG_H
 
 #include <QDialog>
@@ -18,14 +18,14 @@ public:
     explicit TextSearchDialog(QWidget* parent = nullptr, const QHash<long, QVector<QString>>* m_textChunks = nullptr);
     ~TextSearchDialog();
 
-    // °Ë»ö ¸ğµå È¤Àº Ã¥°¥ÇÇ ¸ğµå ¼³Á¤
+    // ê²€ìƒ‰ ëª¨ë“œ í˜¹ì€ ì±…ê°ˆí”¼ ëª¨ë“œ ì„¤ì •
     void setMode(Mode mode);
 
 signals:
     void rowSelected(const QString& searchText, long page, long line);
 
 private slots:
-    // °Ë»ö ¹öÆ° Å¬¸¯ ½Ã È£ÃâµÉ ½½·Ô
+    // ê²€ìƒ‰ ë²„íŠ¼ í´ë¦­ ì‹œ í˜¸ì¶œë  ìŠ¬ë¡¯
     void onSearchButtonClicked();
 
 private:

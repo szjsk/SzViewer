@@ -5,9 +5,16 @@ SzViewer::SzViewer(QWidget *parent)
 {
 
     m_ui.setupUi(this);
+    m_stackedWidget = new QStackedWidget(this);
+
     m_textViewContainer = new TextViewContainer(this, StatusStore::instance().getTextSettings());
-    this->setCentralWidget(m_textViewContainer);
-    
+    m_stackedWidget->addWidget(m_textViewContainer);
+
+    m_imageViewContainer = new ImageViewContainer(this);
+    m_stackedWidget->addWidget(m_imageViewContainer);
+
+    this->setCentralWidget(m_stackedWidget);
+
     // 드래그 앤 드롭 활성화
     setAcceptDrops(true);
 
@@ -45,6 +52,22 @@ SzViewer::SzViewer(QWidget *parent)
     });
     m_ui.menuBar->addAction(helpAction);
     
+
+    QAction* imageAction = new QAction(QIcon(":/path/to/icon.png"), "image", this);
+    connect(imageAction, &QAction::triggered, this, [this]() {
+        if (m_imageViewContainer->isVisible()) {
+            m_stackedWidget->setCurrentWidget(m_textViewContainer);
+            m_imageViewContainer->setVisible(false);
+            m_textViewContainer->setVisible(true);
+        }
+        else {
+            m_stackedWidget->setCurrentWidget(m_imageViewContainer);
+            m_textViewContainer->setVisible(false);
+            m_imageViewContainer->setVisible(true);
+        }
+
+        });
+    m_ui.menuBar->addAction(imageAction);
 
    // this->installEventFilter(this);
 
@@ -135,31 +158,21 @@ void SzViewer::openFile(QString& fileName) {
     QFileInfo fileInfo(fileName);
     QString suffix = fileInfo.suffix().toLower();
 
-    if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp") {
+    if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif") {
         qDebug() << "이미지 파일 :: " << fileName;
         // 예: 이미지 파일을 처리하는 로직 추가
         // 예를 들면 이미지 뷰어 위젯에 이미지를 표시하는 방식 등이 있을 수 있음.
+        m_stackedWidget->setCurrentWidget(m_imageViewContainer);
+        m_textViewContainer->setVisible(false);
+        m_imageViewContainer->setVisible(true);
+        m_imageViewContainer->loadImage(fileName, 0);
     }
     else {
+        m_stackedWidget->setCurrentWidget(m_imageViewContainer);
+        m_textViewContainer->setVisible(false);
+        m_imageViewContainer->setVisible(true);
         m_textViewContainer->loadText(fileName);
     }
-}
-
-// 텍스트 파일 여부를 판단하기 위한 헬퍼 함수
-bool SzViewer::isTextFile(const QString& fileName)
-{
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly))
-        return false;
-
-    QByteArray data = file.read(1024);  // 처음 1024 바이트 읽기
-    file.close();
-
-    // 널 문자가 있다면 이진 파일로 간주
-    if (data.contains('\0'))
-        return false;
-
-    return true;
 }
 
 void SzViewer::updateSettingPreview(const TextSettingProps& settings)

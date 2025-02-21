@@ -7,12 +7,14 @@
 #include "textviewer/TextSearchDialog.h"
 #include "AboutDialog.h"
 #include "StatusStore.h"
+#include "imageviewer/ImageViewContainer.h"
 
 #include <qfiledialog.h>
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QFontDialog>
+#include <QStackedWidget>
 
 class SzViewer : public QMainWindow
 {
@@ -25,6 +27,9 @@ public:
 private:
     Ui::SzViewerClass m_ui;
     TextViewContainer* m_textViewContainer;
+    ImageViewContainer* m_imageViewContainer;
+	QStackedWidget* m_stackedWidget;
+
     bool isTextFile(const QString& fileName);
     void openFile(QString& fileName);
     void goToTextPage(const QString& searchText, long page, long line);
