@@ -56,8 +56,7 @@ private slots:
 private:
     void populateFontCombo(const QString& filter = QString());
 
-    TextSettingProps g_settings;
-
+    TextSettingProps m_settings;
     QLineEdit* m_searchEdit;
     QComboBox* m_fontCombo;
     QSpinBox* m_fontSizeSpin;

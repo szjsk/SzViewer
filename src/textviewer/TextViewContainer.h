@@ -10,9 +10,12 @@
 #include <QSizeF>
 #include <QAbstractTextDocumentLayout>
 #include <QTimer>
-#include <Qslider>
+#include <QSlider>
 #include <QLabel>
 #include "TextSettingProps.h"
+#include <QFileInfo>
+#include <QDir>
+#include <QCollator>
 
 class TextViewContainer : public QWidget
 {
@@ -30,16 +33,17 @@ public:
     void findPage(const QString&, long page, long line);
 
 private:
-    static constexpr int G_TEXT_BROWSER_CNT = 2;
-    TextSettingProps g_settings;
-
-    QString g_text;
-    long g_currentPosition;
-    QTextBrowser* g_textBrowserArray[G_TEXT_BROWSER_CNT];
-    QLabel* qSliderInfo;
-    QHash<QChar, int> g_charWidthCache;
-    QHash<long, QVector<QString>> textChunks;  
-    QTimer* resizeTimer;
+    static constexpr int M_TEXT_BROWSER_CNT = 2;
+    TextSettingProps m_settings;
+    QString m_text;
+    QString m_fileName;
+    long m_currentPosition;
+    QTextBrowser* m_textBrowserArray[M_TEXT_BROWSER_CNT];
+    QLabel* m_qSliderInfo;
+    QHash<QChar, int> m_charWidthCache;
+    QHash<long, QVector<QString>> m_textChunks;  
+    QTimer* m_resizeTimer;
+    QSlider* m_qSlider;
 
     QTextBrowser* createTextBrowser(); //텍스트뷰 생성
     int getLineHeight(QTextBrowser* tb);
@@ -49,8 +53,7 @@ private:
     void refreshFont(QTextBrowser* tb);
     void refreshStyle(QTextBrowser* tb);
     void applyLineSpacing(QTextBrowser* tb);
-
-    QSlider* qSlider;
+    QString getNextOrPrevFileName(int nextOrPrev);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);

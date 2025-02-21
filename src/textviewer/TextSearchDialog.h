@@ -15,7 +15,7 @@ class TextSearchDialog : public QDialog
 public:
     enum Mode { SearchMode, BookmarkMode };
 
-    explicit TextSearchDialog(QWidget* parent = nullptr, const QHash<long, QVector<QString>>* textChunks = nullptr);
+    explicit TextSearchDialog(QWidget* parent = nullptr, const QHash<long, QVector<QString>>* m_textChunks = nullptr);
     ~TextSearchDialog();
 
     // 검색 모드 혹은 책갈피 모드 설정

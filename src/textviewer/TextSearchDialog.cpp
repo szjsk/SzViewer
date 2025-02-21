@@ -8,8 +8,8 @@
 #include <QTableWidgetItem>
 #include <QTimer>
 
-TextSearchDialog::TextSearchDialog(QWidget* parent, const QHash<long, QVector<QString>>* textChunks)
-	: QDialog(parent), currentMode(SearchMode), textChunksRefs(textChunks)
+TextSearchDialog::TextSearchDialog(QWidget* parent, const QHash<long, QVector<QString>>* m_textChunks)
+	: QDialog(parent), currentMode(SearchMode), textChunksRefs(m_textChunks)
 {
     setWindowTitle("검색/책갈피 다이얼로그");
 

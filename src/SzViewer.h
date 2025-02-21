@@ -22,9 +22,8 @@ public:
     ~SzViewer();
 
 private:
-    Ui::SzViewerClass ui;
-    QMenu* menu;
-    TextViewContainer* textViewContainer;
+    Ui::SzViewerClass m_ui;
+    TextViewContainer* m_textViewContainer;
     bool isTextFile(const QString& fileName);
     void openFile(QString& fileName);
     void goToTextPage(const QString& searchText, long page, long line);
@@ -33,7 +32,7 @@ protected:
     void resizeEvent(QResizeEvent* event);
     void dropEvent(QDropEvent* event);
 	void dragEnterEvent(QDragEnterEvent* event);
-    
+
 private slots:
     void openFileDialog();
     void openFontDialog();

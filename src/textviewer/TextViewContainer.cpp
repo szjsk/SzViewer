@@ -1,7 +1,7 @@
 #include "TextViewContainer.h"
 
 TextViewContainer::TextViewContainer(QWidget* parent, const TextSettingProps& settings)
-	: QWidget(parent), g_settings(settings)
+	: QWidget(parent), m_settings(settings)
 {
  
     //main
@@ -9,33 +9,33 @@ TextViewContainer::TextViewContainer(QWidget* parent, const TextSettingProps& se
 
     //for textBrowser
     QHBoxLayout* hBoxBrowser = new QHBoxLayout();
-    g_textBrowserArray[0] = createTextBrowser();
-    g_textBrowserArray[1] = createTextBrowser();
+    m_textBrowserArray[0] = createTextBrowser();
+    m_textBrowserArray[1] = createTextBrowser();
 
-    hBoxBrowser->addWidget(g_textBrowserArray[0]);
-    hBoxBrowser->addWidget(g_textBrowserArray[1]);
+    hBoxBrowser->addWidget(m_textBrowserArray[0]);
+    hBoxBrowser->addWidget(m_textBrowserArray[1]);
 
-    g_textBrowserArray[1]->setVisible(g_settings.isSplitView());
+    m_textBrowserArray[1]->setVisible(m_settings.isSplitView());
 
     vBoxContainer->addLayout(hBoxBrowser, 1);
 
 	//for slider
     QHBoxLayout* hBoxSlider = new QHBoxLayout();
-    qSlider = new QSlider(Qt::Horizontal, this);
-    hBoxSlider->addWidget(qSlider);
+    m_qSlider = new QSlider(Qt::Horizontal, this);
+    hBoxSlider->addWidget(m_qSlider);
 
-    qSliderInfo = new QLabel(this);
-    hBoxSlider->addWidget(qSliderInfo);
+    m_qSliderInfo = new QLabel(this);
+    hBoxSlider->addWidget(m_qSliderInfo);
 
     vBoxContainer->addLayout(hBoxSlider);
 
     setLayout(vBoxContainer);
 
     // 슬라이더 값 변경 시 정보를 업데이트하는 람다 슬롯 연결
-    connect(qSlider, &QSlider::valueChanged, this, [this](int value) {
-        g_currentPosition = value - 1;
-        setPage(g_currentPosition);
-        qSliderInfo->setText(QString("page: %1 / %2").arg(value).arg(qSlider->maximum()));
+    connect(m_qSlider, &QSlider::valueChanged, this, [this](int value) {
+        m_currentPosition = value - 1;
+        setPage(m_currentPosition);
+        m_qSliderInfo->setText(QString("page: %1 / %2").arg(value).arg(m_qSlider->maximum()));
         });
 
 }
@@ -60,51 +60,60 @@ void TextViewContainer::loadText(QString& filePath) {
         qDebug() << "파일을 열 수 없습니다.";
         return;
     }
+
+    this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
+
+    m_fileName = filePath;
+
     QElapsedTimer timer;
     timer.start();
     QTextStream in(&file);
-    g_text = in.readAll();
+    m_text = in.readAll();    
     file.close();
+
     qDebug() << "file load time :" << timer.elapsed()/1000 << "s";
 
     //init
-    g_currentPosition = 0;
-    qSlider->setValue(0);
-    qSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
+    m_currentPosition = 0;
+    m_qSlider->setValue(0);
+    m_qSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
 
     refreshPage();
+    this->window()->activateWindow();
+    this->window()->raise();
+    m_textBrowserArray[0]->installEventFilter(this);
 }
 
 void TextViewContainer::findPage(const QString& text, long page, long line) {
     int browserIndex = 0;
-    if (g_textBrowserArray[1]->isVisible()) {
+    if (m_textBrowserArray[1]->isVisible()) {
 		browserIndex = (page % 2);
     }
-    g_currentPosition = page - browserIndex;
+    m_currentPosition = page - browserIndex;
 
-    setPage(g_currentPosition);
-    qSlider->setValue(g_currentPosition + 1);
+    setPage(m_currentPosition);
+    m_qSlider->setValue(m_currentPosition + 1);
 
-    QTextCursor cursor(g_textBrowserArray[browserIndex]->document());
-    cursor = g_textBrowserArray[browserIndex]->document()->find(text, cursor);
+    QTextCursor cursor(m_textBrowserArray[browserIndex]->document());
+    cursor = m_textBrowserArray[browserIndex]->document()->find(text, cursor);
     if (!cursor.isNull()) {
-        g_textBrowserArray[browserIndex]->setTextCursor(cursor);
+        m_textBrowserArray[browserIndex]->setTextCursor(cursor);
     }
 
 }
 
 void TextViewContainer::setPage(long position) {
 
-    for (int i = 0; i < G_TEXT_BROWSER_CNT; i++) {
+    for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
 
-        if (g_textBrowserArray[i]->isVisible()) {
-            QVector<QString> lines = textChunks.value(position + i);
+        if (m_textBrowserArray[i]->isVisible()) {
+            QVector<QString> lines = m_textChunks.value(position + i);
 
-            g_textBrowserArray[i]->clear();
-            g_textBrowserArray[i]->setPlainText(lines.join(""));
-            g_textBrowserArray[i]->moveCursor(QTextCursor::Start);
+            m_textBrowserArray[i]->clear();
+            m_textBrowserArray[i]->setPlainText(lines.join(""));
+            m_textBrowserArray[i]->moveCursor(QTextCursor::Start);
 
-            applyLineSpacing(g_textBrowserArray[i]);
+            applyLineSpacing(m_textBrowserArray[i]);
 
         }
     }
@@ -113,36 +122,36 @@ void TextViewContainer::setPage(long position) {
 
 void TextViewContainer::nextPage() {
 
-    for (int i = 0; i < G_TEXT_BROWSER_CNT; i++) {
-        if (g_textBrowserArray[i]->isVisible() && g_currentPosition + 1 < textChunks.size()) {
-            g_currentPosition++;
+    for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
+        if (m_textBrowserArray[i]->isVisible() && m_currentPosition + 1 < m_textChunks.size()) {
+            m_currentPosition++;
         }
     }
 
-    setPage(g_currentPosition);
-    qSlider->setValue(g_currentPosition + 1);
+    setPage(m_currentPosition);
+    m_qSlider->setValue(m_currentPosition + 1);
 
 }
 
 void TextViewContainer::prevPage() {
     
-    for (int i = 0; i < G_TEXT_BROWSER_CNT; i++) {
-        if (g_textBrowserArray[i]->isVisible() && g_currentPosition - i > -1) {
-            g_currentPosition--;
+    for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
+        if (m_textBrowserArray[i]->isVisible() && m_currentPosition - i > -1) {
+            m_currentPosition--;
         }
     }
 
-    if (g_currentPosition < 0) {
-        g_currentPosition = 0;
+    if (m_currentPosition < 0) {
+        m_currentPosition = 0;
     }
 
-    setPage(g_currentPosition);
-    qSlider->setValue(g_currentPosition + 1);
+    setPage(m_currentPosition);
+    m_qSlider->setValue(m_currentPosition + 1);
 
 }
 
 void TextViewContainer::refreshFont(QTextBrowser* tb) {
-	QFont f = g_settings.getFont();
+	QFont f = m_settings.getFont();
     f.setHintingPreference(QFont::PreferFullHinting);
     f.setStyleStrategy(QFont::PreferAntialias);
 
@@ -150,22 +159,22 @@ void TextViewContainer::refreshFont(QTextBrowser* tb) {
 }
 
 void TextViewContainer::refreshStyle(QTextBrowser* tb) {
-    QFontMetrics fm(g_settings.getFont());
+    QFontMetrics fm(m_settings.getFont());
     int lineHeight = fm.lineSpacing();
 
     QString style = QString("QTextBrowser { "
         "background-color: %1; "
         "padding: %2px %3px %4px %5px; "
         "color: %6; }")
-        .arg(g_settings.getBackgroundColor().name())
-        .arg(g_settings.getPadding().top())
-        .arg(g_settings.getPadding().right())
-        .arg(g_settings.getPadding().bottom())
-        .arg(g_settings.getPadding().left())
-        .arg(g_settings.getTextColor().name())
+        .arg(m_settings.getBackgroundColor().name())
+        .arg(m_settings.getPadding().top())
+        .arg(m_settings.getPadding().right())
+        .arg(m_settings.getPadding().bottom())
+        .arg(m_settings.getPadding().left())
+        .arg(m_settings.getTextColor().name())
         ;
 
-    qDebug() << "lineHeight :: " << lineHeight  << ", g_settings.getLineSpacing() ::  " << g_settings.getLineSpacing() << ", height : " << tb->height();
+    qDebug() << "lineHeight :: " << lineHeight  << ", m_settings.getLineSpacing() ::  " << m_settings.getLineSpacing() << ", height : " << tb->height();
 
     tb->setStyleSheet(style);
 	applyLineSpacing(tb);
@@ -174,7 +183,7 @@ void TextViewContainer::refreshStyle(QTextBrowser* tb) {
 
 void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
     QFontMetrics fm(tb->font());
-    int lineHeight = fm.lineSpacing() * g_settings.getLineSpacing();
+    int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
 
     QTextCursor cursor(tb->document());
     cursor.select(QTextCursor::Document);
@@ -186,31 +195,31 @@ void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
 
 void TextViewContainer::refreshPage() {
     QElapsedTimer timer;
-	textChunks.clear();
+	m_textChunks.clear();
 
     timer.start();
-    int maxLine = getLineHeight(g_textBrowserArray[0]);
-    int maxWidth = g_textBrowserArray[0]->viewport()->width() - (g_settings.getPadding().left() + g_settings.getPadding().right());
+    int maxLine = getLineHeight(m_textBrowserArray[0]);
+    int maxWidth = m_textBrowserArray[0]->viewport()->width() - (m_settings.getPadding().left() + m_settings.getPadding().right());
     
     QString line;
     int width = 0;
-    QFontMetrics fm(g_textBrowserArray[0]->font());
+    QFontMetrics fm(m_textBrowserArray[0]->font());
     int page = 0;
     QVector<QString> lines;
-    qDebug() << "maxLine : " << maxLine << ", maxWidth : " << width;
+    //qDebug() << "maxLine : " << maxLine << ", maxWidth : " << width;
 
-    for (long i = 0; i < g_text.length(); i++) {
-		QChar c = g_text.at(i);
+    for (long i = 0; i < m_text.length(); i++) {
+		QChar c = m_text.at(i);
 		line.append(c);
         width += getFontWidth(&fm, c);
         if (c == '\n' || width >= maxWidth) {
-			qDebug() << "lines.size() : " << lines.size() << ", width : " << width << "line : " << line;
+			//qDebug() << "lines.size() : " << lines.size() << ", width : " << width << "line : " << line;
             lines.append(line);
 			line.clear();
 			width = 0;
 
 			if (lines.size() >= maxLine ) {
-				textChunks.insert( page++, lines);
+				m_textChunks.insert( page++, lines);
 				lines.clear();
 			}
         }
@@ -220,45 +229,45 @@ void TextViewContainer::refreshPage() {
         lines.append(line);
     }
 
-    textChunks.insert(page++, lines);
+    m_textChunks.insert(page++, lines);
 
     qDebug() << "file split time :" << timer.elapsed() / 1000 << "s";
-    qDebug() << textChunks.value(textChunks.size() - 1).join(" ");
-	qSlider->setRange(1, textChunks.size());
-    qSlider->setValue(g_currentPosition + 1);
-    qSliderInfo->setText(QString("page: %1 / %2").arg(g_currentPosition+1).arg(qSlider->maximum()));
+    qDebug() << m_textChunks.value(m_textChunks.size() - 1).join(" ");
+	m_qSlider->setRange(1, m_textChunks.size());
+    m_qSlider->setValue(m_currentPosition + 1);
+    m_qSliderInfo->setText(QString("page: %1 / %2").arg(m_currentPosition+1).arg(m_qSlider->maximum()));
 
-	setPage(g_currentPosition);
+	setPage(m_currentPosition);
 }
 
 bool TextViewContainer::changeSplitView() {
-    bool newSplit = !g_settings.isSplitView();
-    g_settings.setSplitView(newSplit);
-    g_textBrowserArray[1]->setVisible(newSplit);
+    bool newSplit = !m_settings.isSplitView();
+    m_settings.setSplitView(newSplit);
+    m_textBrowserArray[1]->setVisible(newSplit);
     refreshPage();
 	qDebug() << "Split View Changed : " << newSplit;
     return newSplit;
 }
 
 void TextViewContainer::setSettings(const TextSettingProps& s) {
-    g_settings = s;
-    refreshFont(g_textBrowserArray[0]);
-    refreshFont(g_textBrowserArray[1]);
-    refreshStyle(g_textBrowserArray[0]);
-    refreshStyle(g_textBrowserArray[1]);
+    m_settings = s;
+    refreshFont(m_textBrowserArray[0]);
+    refreshFont(m_textBrowserArray[1]);
+    refreshStyle(m_textBrowserArray[0]);
+    refreshStyle(m_textBrowserArray[1]);
 }
 
 
 int TextViewContainer::getLineHeight(QTextBrowser* tb) {
     QFontMetrics fm(tb->font());
-    int lineHeight = fm.lineSpacing() * g_settings.getLineSpacing();
+    int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
 	qDebug() << "lineHeight : " << lineHeight << " , " << fm.ascent();
 
-    return ((tb->height() - (g_settings.getPadding().top()+ g_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
+    return ((tb->height() - (m_settings.getPadding().top()+ m_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
 }
 
 int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
-    if (!g_charWidthCache.contains(c)) {
+    if (!m_charWidthCache.contains(c)) {
         int width = fm->horizontalAdvance(c); // 글자의 너비
 //        width += fm->leftBearing(c); // 왼쪽 여백
         width += fm->rightBearing(c); // 오른쪽 여백
@@ -268,19 +277,26 @@ int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
             width = fm->horizontalAdvance(' ') * 4; // 예: 탭 간격을 4개의 공백으로 설정
         }
 
-        g_charWidthCache.insert(c,width);  // 캐시에 값 저장
+        m_charWidthCache.insert(c,width);  // 캐시에 값 저장
     }
-    return g_charWidthCache.value(c);
+    return m_charWidthCache.value(c);
 }
 
 bool TextViewContainer::eventFilter(QObject* watched, QEvent* event) {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-
-        if (keyEvent->key() == Qt::Key_Space) {
-            qDebug() << "Space Key Pressed";
+        if (keyEvent->key() == Qt::Key_PageDown) {
+            QString next = getNextOrPrevFileName(1);
+            if (!next.isEmpty()) {
+                loadText(next);
+            }
         }
-        else if (keyEvent->key() == Qt::Key_Left) {
+        else if (keyEvent->key() == Qt::Key_PageUp) {
+            QString prev = getNextOrPrevFileName(-1);
+            if (!prev.isEmpty()) {
+                loadText(prev);
+            }
+        }else if (keyEvent->key() == Qt::Key_Left) {
             prevPage();
         }
         else if (keyEvent->key() == Qt::Key_Right) {
@@ -313,15 +329,30 @@ bool TextViewContainer::eventFilter(QObject* watched, QEvent* event) {
     return QWidget::eventFilter(watched, event);
 }
 
+
+QString TextViewContainer::getNextOrPrevFileName(int nextOrPrev) {
+    QFileInfo fileInfo(m_fileName);
+    QDir dir = fileInfo.dir();
+    QStringList fileList = dir.entryList(QDir::Files, QDir::Name);
+    QCollator collator;
+    collator.setNumericMode(true);
+    std::sort(fileList.begin(), fileList.end(),
+        [&collator](const QString& s1, const QString& s2) {
+            return collator.compare(s1, s2) < 0;
+        });
+    int currentIndex = fileList.indexOf(fileInfo.fileName());
+    int idx = currentIndex + nextOrPrev;
+    if (currentIndex != -1 && idx < fileList.size() && idx > -1) {
+        return dir.absoluteFilePath(fileList.at(idx));
+    }
+
+    return QString();
+}
+
 void TextViewContainer::resizeEvent(QResizeEvent* event) {
     QWidget::resizeEvent(event);
-
-    // 창 크기 변경 시 현재 페이지 기준으로 다시 계산
-    //QTimer::singleShot(30, this, [this]() {
-       // refreshPage();
-    //    });
 }
 
 QHash<long, QVector<QString>>* TextViewContainer::getTextChunks() {
-	return &textChunks;
+	return &m_textChunks;
 }

@@ -2,7 +2,7 @@
 
 TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* parent)
     : QDialog(parent),
-    g_settings(settings)
+    m_settings(settings)
 {
 
     setWindowTitle(tr("폰트 선택"));
@@ -58,7 +58,7 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
     m_lineSpacingSpin = new QDoubleSpinBox(this);
     m_lineSpacingSpin->setRange(0.5, 3.0);
     m_lineSpacingSpin->setSingleStep(0.1);
-    m_lineSpacingSpin->setValue(g_settings.getLineSpacing());
+    m_lineSpacingSpin->setValue(m_settings.getLineSpacing());
 
     lineSpacingLayout->addWidget(lineSpacingLabel);
     lineSpacingLayout->addWidget(m_lineSpacingSpin);
@@ -96,13 +96,13 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
     m_paddingLeftSpin = new QSpinBox(this);
     m_paddingRightSpin = new QSpinBox(this);
     m_paddingTopSpin->setRange(0, 100);
-	m_paddingTopSpin->setValue(g_settings.getPadding().top());
+	m_paddingTopSpin->setValue(m_settings.getPadding().top());
     m_paddingBottomSpin->setRange(0, 100);
-    m_paddingBottomSpin->setValue(g_settings.getPadding().bottom());
+    m_paddingBottomSpin->setValue(m_settings.getPadding().bottom());
     m_paddingLeftSpin->setRange(0, 100);
-    m_paddingLeftSpin->setValue(g_settings.getPadding().left());
+    m_paddingLeftSpin->setValue(m_settings.getPadding().left());
     m_paddingRightSpin->setRange(0, 100);
-    m_paddingRightSpin->setValue(g_settings.getPadding().right());
+    m_paddingRightSpin->setValue(m_settings.getPadding().right());
     paddingLayout->addWidget(paddingLabel, 0, 0, 1, 2);
     paddingLayout->addWidget(paddingTopLabel, 1, 0);
     paddingLayout->addWidget(m_paddingTopSpin, 1, 1);
@@ -199,7 +199,7 @@ QMargins TextSettingDialog::selectedPadding() const
 
 void TextSettingDialog::chooseTextColor()
 {
-    QColor color = QColorDialog::getColor(g_settings.getTextColor(), this, tr("글자색 선택"));
+    QColor color = QColorDialog::getColor(m_settings.getTextColor(), this, tr("글자색 선택"));
     if (color.isValid()) {
         m_textColor = color;
         m_textColorButton->setStyleSheet(QString("background-color: %1").arg(color.name()));
@@ -209,7 +209,7 @@ void TextSettingDialog::chooseTextColor()
 
 void TextSettingDialog::chooseBackgroundColor()
 {
-    QColor color = QColorDialog::getColor(g_settings.getBackgroundColor(), this, tr("배경색 선택"));
+    QColor color = QColorDialog::getColor(m_settings.getBackgroundColor(), this, tr("배경색 선택"));
     if (color.isValid()) {
         m_backgroundColor = color;
         m_backgroundColorButton->setStyleSheet(QString("background-color: %1").arg(color.name()));
@@ -219,26 +219,26 @@ void TextSettingDialog::chooseBackgroundColor()
 
 TextSettingProps TextSettingDialog::getTextSettings()
 {
-    g_settings.setFont(selectedFont());
-    g_settings.setLineSpacing(selectedLineSpacing());
-    g_settings.setTextColor(selectedTextColor());
-    g_settings.setBackgroundColor(selectedBackgroundColor());
-    g_settings.setPadding(selectedPadding());
+    m_settings.setFont(selectedFont());
+    m_settings.setLineSpacing(selectedLineSpacing());
+    m_settings.setTextColor(selectedTextColor());
+    m_settings.setBackgroundColor(selectedBackgroundColor());
+    m_settings.setPadding(selectedPadding());
 
-    return g_settings;
+    return m_settings;
 }
 
 // 이 슬롯은 모든 컨트롤의 변경시 호출되어 preview를 emit합니다.
 void TextSettingDialog::updatePreview()
 {
 	qDebug() << "---- updatePreview: " ;
-	g_settings.setFont(selectedFont());
-	g_settings.setLineSpacing(selectedLineSpacing());
-	g_settings.setTextColor(selectedTextColor());
-	g_settings.setBackgroundColor(selectedBackgroundColor());
-	g_settings.setPadding(selectedPadding());
+	m_settings.setFont(selectedFont());
+	m_settings.setLineSpacing(selectedLineSpacing());
+	m_settings.setTextColor(selectedTextColor());
+	m_settings.setBackgroundColor(selectedBackgroundColor());
+	m_settings.setPadding(selectedPadding());
 
-    emit settingsChanged(g_settings);
+    emit settingsChanged(m_settings);
 }
 
 // OK를 눌렀을 때 최종 설정 적용
