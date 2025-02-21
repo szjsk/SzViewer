@@ -154,7 +154,6 @@ void TextViewContainer::refreshFont(QTextBrowser* tb) {
 	QFont f = m_settings.getFont();
     f.setHintingPreference(QFont::PreferFullHinting);
     f.setStyleStrategy(QFont::PreferAntialias);
-
     tb->setFont(f);
 }
 
@@ -232,7 +231,6 @@ void TextViewContainer::refreshPage() {
     m_textChunks.insert(page++, lines);
 
     qDebug() << "file split time :" << timer.elapsed() / 1000 << "s";
-    qDebug() << m_textChunks.value(m_textChunks.size() - 1).join(" ");
 	m_qSlider->setRange(1, m_textChunks.size());
     m_qSlider->setValue(m_currentPosition + 1);
     m_qSliderInfo->setText(QString("page: %1 / %2").arg(m_currentPosition+1).arg(m_qSlider->maximum()));
@@ -245,7 +243,6 @@ bool TextViewContainer::changeSplitView() {
     m_settings.setSplitView(newSplit);
     m_textBrowserArray[1]->setVisible(newSplit);
     refreshPage();
-	qDebug() << "Split View Changed : " << newSplit;
     return newSplit;
 }
 

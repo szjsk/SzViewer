@@ -5,6 +5,7 @@
 #include "textviewer/TextViewContainer.h"
 #include "textviewer/TextSettingDialog.h"
 #include "textviewer/TextSearchDialog.h"
+#include "AboutDialog.h"
 #include "StatusStore.h"
 
 #include <qfiledialog.h>

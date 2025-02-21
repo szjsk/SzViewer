@@ -5,13 +5,13 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
     m_settings(settings)
 {
 
-    setWindowTitle(tr("폰트 선택"));
+    setWindowTitle(tr("font"));
 
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
     // 검색 입력란
     QHBoxLayout* searchLayout = new QHBoxLayout;
-    QLabel* searchLabel = new QLabel(tr("검색:"), this);
+    QLabel* searchLabel = new QLabel(tr("search:"), this);
     m_searchEdit = new QLineEdit(this);
     searchLayout->addWidget(searchLabel);
     searchLayout->addWidget(m_searchEdit);
@@ -19,7 +19,7 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
 
     // 폰트 콤보박스
     QHBoxLayout* fontLayout = new QHBoxLayout;
-    QLabel* fontLabel = new QLabel(tr("폰트:"), this);
+    QLabel* fontLabel = new QLabel(tr("font:"), this);
     m_fontCombo = new QComboBox(this);
     fontLayout->addWidget(fontLabel);
     fontLayout->addWidget(m_fontCombo);
@@ -34,7 +34,7 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
 
     // 폰트 크기 선택
     QHBoxLayout* sizeLayout = new QHBoxLayout;
-    QLabel* sizeLabel = new QLabel(tr("크기:"), this);
+    QLabel* sizeLabel = new QLabel(tr("size:"), this);
     m_fontSizeSpin = new QSpinBox(this);
     m_fontSizeSpin->setRange(6, 100);
     m_fontSizeSpin->setValue(settings.getFont().pointSize() > 0 ? settings.getFont().pointSize() : 14);
@@ -44,9 +44,9 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
 
     // 볼드, 이탤릭 체크박스
     QHBoxLayout* styleLayout = new QHBoxLayout;
-    m_boldCheck = new QCheckBox(tr("볼드"), this);
+    m_boldCheck = new QCheckBox(tr("bold"), this);
     m_boldCheck->setChecked(settings.getFont().bold());
-    m_italicCheck = new QCheckBox(tr("이탤릭"), this);
+    m_italicCheck = new QCheckBox(tr("italic"), this);
     m_italicCheck->setChecked(settings.getFont().italic());
     styleLayout->addWidget(m_boldCheck);
     styleLayout->addWidget(m_italicCheck);
@@ -54,7 +54,7 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
 
     // 줄 간격 입력
     QHBoxLayout* lineSpacingLayout = new QHBoxLayout;
-    QLabel* lineSpacingLabel = new QLabel(tr("줄 간격:"), this);
+    QLabel* lineSpacingLabel = new QLabel(tr("line spacing:"), this);
     m_lineSpacingSpin = new QDoubleSpinBox(this);
     m_lineSpacingSpin->setRange(0.5, 3.0);
     m_lineSpacingSpin->setSingleStep(0.1);
@@ -67,8 +67,8 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
     // 글자색 선택
 	m_textColor = settings.getTextColor();
     QHBoxLayout* textColorLayout = new QHBoxLayout;
-    QLabel* textColorLabel = new QLabel(tr("글자색:"), this);
-    m_textColorButton = new QPushButton(tr("선택"), this);
+    QLabel* textColorLabel = new QLabel(tr("font color:"), this);
+    m_textColorButton = new QPushButton(tr("choose"), this);
     connect(m_textColorButton, &QPushButton::clicked, this, &TextSettingDialog::chooseTextColor);
     textColorLayout->addWidget(textColorLabel);
     textColorLayout->addWidget(m_textColorButton);
@@ -77,8 +77,8 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
     // 배경색 선택
 	m_backgroundColor = settings.getBackgroundColor();
     QHBoxLayout* backgroundColorLayout = new QHBoxLayout;
-    QLabel* backgroundColorLabel = new QLabel(tr("배경색:"), this);
-    m_backgroundColorButton = new QPushButton(tr("선택"), this);
+    QLabel* backgroundColorLabel = new QLabel(tr("backgroud-color:"), this);
+    m_backgroundColorButton = new QPushButton(tr("choose"), this);
     connect(m_backgroundColorButton, &QPushButton::clicked, this, &TextSettingDialog::chooseBackgroundColor);
     backgroundColorLayout->addWidget(backgroundColorLabel);
     backgroundColorLayout->addWidget(m_backgroundColorButton);
@@ -86,11 +86,11 @@ TextSettingDialog::TextSettingDialog(const TextSettingProps& settings, QWidget* 
 
     // 패딩 입력 (상/하/좌/우)
     QGridLayout* paddingLayout = new QGridLayout;
-    QLabel* paddingLabel = new QLabel(tr("패딩:"), this);
-    QLabel* paddingTopLabel = new QLabel(tr("상:"), this);
-    QLabel* paddingBottomLabel = new QLabel(tr("하:"), this);
-    QLabel* paddingLeftLabel = new QLabel(tr("좌:"), this);
-    QLabel* paddingRightLabel = new QLabel(tr("우:"), this);
+    QLabel* paddingLabel = new QLabel(tr("padding:"), this);
+    QLabel* paddingTopLabel = new QLabel(tr("top:"), this);
+    QLabel* paddingBottomLabel = new QLabel(tr("bottom:"), this);
+    QLabel* paddingLeftLabel = new QLabel(tr("left:"), this);
+    QLabel* paddingRightLabel = new QLabel(tr("right:"), this);
     m_paddingTopSpin = new QSpinBox(this);
     m_paddingBottomSpin = new QSpinBox(this);
     m_paddingLeftSpin = new QSpinBox(this);
@@ -147,7 +147,6 @@ void TextSettingDialog::populateFontCombo(const QString& filter)
     QFontDatabase fd;
     fd.writingSystemName(QFontDatabase::Korean);
     QStringList families = fd.families();
-    qDebug() << "Available fonts:" << families;
 
     if (!filter.isEmpty()) {
         QString filterLower = filter.toLower();
@@ -199,7 +198,7 @@ QMargins TextSettingDialog::selectedPadding() const
 
 void TextSettingDialog::chooseTextColor()
 {
-    QColor color = QColorDialog::getColor(m_settings.getTextColor(), this, tr("글자색 선택"));
+    QColor color = QColorDialog::getColor(m_settings.getTextColor(), this, tr("font color"));
     if (color.isValid()) {
         m_textColor = color;
         m_textColorButton->setStyleSheet(QString("background-color: %1").arg(color.name()));
@@ -209,7 +208,7 @@ void TextSettingDialog::chooseTextColor()
 
 void TextSettingDialog::chooseBackgroundColor()
 {
-    QColor color = QColorDialog::getColor(m_settings.getBackgroundColor(), this, tr("배경색 선택"));
+    QColor color = QColorDialog::getColor(m_settings.getBackgroundColor(), this, tr("backgroud-color"));
     if (color.isValid()) {
         m_backgroundColor = color;
         m_backgroundColorButton->setStyleSheet(QString("background-color: %1").arg(color.name()));
@@ -231,7 +230,6 @@ TextSettingProps TextSettingDialog::getTextSettings()
 // 이 슬롯은 모든 컨트롤의 변경시 호출되어 preview를 emit합니다.
 void TextSettingDialog::updatePreview()
 {
-	qDebug() << "---- updatePreview: " ;
 	m_settings.setFont(selectedFont());
 	m_settings.setLineSpacing(selectedLineSpacing());
 	m_settings.setTextColor(selectedTextColor());

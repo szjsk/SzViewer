@@ -11,14 +11,14 @@
 TextSearchDialog::TextSearchDialog(QWidget* parent, const QHash<long, QVector<QString>>* m_textChunks)
 	: QDialog(parent), currentMode(SearchMode), textChunksRefs(m_textChunks)
 {
-    setWindowTitle("검색/책갈피 다이얼로그");
+    setWindowTitle("Search");
 
     // 기본 레이아웃 설정
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     QHBoxLayout* topLayout = new QHBoxLayout;
 
     searchLineEdit = new QLineEdit(this);
-    searchButton = new QPushButton("검색", this);
+    searchButton = new QPushButton("search", this);
     topLayout->addWidget(searchLineEdit);
     topLayout->addWidget(searchButton);
     mainLayout->addLayout(topLayout);
@@ -63,18 +63,18 @@ void TextSearchDialog::setMode(Mode mode)
 {
     currentMode = mode;
     if (mode == BookmarkMode) {
-        searchButton->setText("책갈피");
+        searchButton->setText("bookmark");
         // 책갈피 모드에서는 페이지번호와 라인만 표시
         resultTable->setColumnCount(2);
         QStringList headers;
-        headers << "라인" << "페이지번호";
+        headers << "text" << "page";
         resultTable->setHorizontalHeaderLabels(headers);
     }
     else {
-        searchButton->setText("검색");
+        searchButton->setText("search");
         resultTable->setColumnCount(3);
         QStringList headers;
-        headers << "라인" << "페이지번호" << "위치";
+        headers << "text" << "page" << "line";
         resultTable->setHorizontalHeaderLabels(headers);
     }
 }

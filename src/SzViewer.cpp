@@ -12,7 +12,7 @@ SzViewer::SzViewer(QWidget *parent)
     setAcceptDrops(true);
 
 
-    QAction* fileOpenAction = new QAction(QIcon(":/path/to/icon.png"), "File", this);
+    QAction* fileOpenAction = new QAction(QIcon(":/path/to/icon.png"), "Open", this);
     connect(fileOpenAction, &QAction::triggered, this, &SzViewer::openFileDialog);
     m_ui.menuBar->addAction(fileOpenAction);
 
@@ -28,7 +28,6 @@ SzViewer::SzViewer(QWidget *parent)
 
     // 클릭 시 동작 정의
     connect(splitAction, &QAction::triggered, this, [this]() {
-		qDebug() << "Split Clicked";
         TextSettingProps setting = StatusStore::instance().getTextSettings();
         setting.setSplitView(m_textViewContainer->changeSplitView());
 		StatusStore::instance().saveSetting(&setting);
@@ -37,6 +36,15 @@ SzViewer::SzViewer(QWidget *parent)
     // 메뉴바에 아이콘 버튼 추가
 
     m_ui.menuBar->addAction(splitAction);
+
+
+    QAction* helpAction = new QAction(QIcon(":/path/to/icon.png"), "Help", this);
+    connect(helpAction, &QAction::triggered, this, [this]() {
+        AboutDialog dialog(this);
+		dialog.exec();
+    });
+    m_ui.menuBar->addAction(helpAction);
+    
 
    // this->installEventFilter(this);
 
@@ -48,26 +56,18 @@ SzViewer::~SzViewer()
 
 void SzViewer::openSearchDialog()
 {
-
     TextSearchDialog dialog(this, m_textViewContainer->getTextChunks());
     connect(&dialog, &TextSearchDialog::rowSelected, this, &SzViewer::goToTextPage);
-
-    qDebug() << "open Search";
-
     dialog.exec();
-	qDebug() << "close Search";
 }
 
 void SzViewer::goToTextPage(const QString& searchText, long page, long line)
 {
-	qDebug() << "goToTextPage: " << searchText << " , " << page << " , " << line;
 	m_textViewContainer->findPage(searchText, page, line);
 }
 
 void SzViewer::openFileDialog()
 {
-    qDebug() << "open File";
-
     QString fileName = QFileDialog::getOpenFileName(this, "Open File",
         QDir::currentPath(), "Text Files (*.txt);;Image Files (*.jpg)");
 
@@ -109,7 +109,6 @@ void SzViewer::dropEvent(QDropEvent* event)
 {
     QList<QUrl> urls = event->mimeData()->urls();
 
-    qDebug() << "url :: " << urls;
     if (urls.isEmpty() || urls.length() != 1) {
         return;
     }
