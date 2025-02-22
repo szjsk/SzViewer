@@ -4,7 +4,7 @@
 TextSettingProps::TextSettingProps()
     : splitView(false),
       textView(true),
-      font(QFont("돋움", 16)),
+      font(QFont("맑은 고딕", 16, QFont::Bold)),
       textColor(Qt::black),
       backgroundColor(QColor("#e8e4d2")), //#e8e4d2
       padding(10, 10, 10, 10),
