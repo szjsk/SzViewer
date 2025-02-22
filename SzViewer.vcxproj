@@ -95,12 +95,18 @@
     <ClCompile Include="src\AboutDialog.cpp" />
     <ClCompile Include="src\imageviewer\ImageView.cpp" />
     <ClCompile Include="src\imageviewer\ImageViewContainer.cpp" />
+    <ClCompile Include="src\imageviewer\ImageSettingProps.cpp" />
+    <ClCompile Include="src\imageviewer\ImageToolBar.cpp" />
     <ClCompile Include="src\textviewer\TextSearchDialog.cpp" />
     <ClCompile Include="src\textviewer\TextSettingDialog.cpp" />
     <ClCompile Include="src\textviewer\TextSettingProps.cpp" />
+    <ClCompile Include="src\textviewer\TextToolbar.cpp">
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).moc</QtMocFileName>
+      <DynamicSource Condition="'$(Configuration)|$(Platform)'=='Release|x64'">input</DynamicSource>
+      <QtMocFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).moc</QtMocFileName>
+    </ClCompile>
     <ClCompile Include="src\textviewer\TextViewContainer.cpp" />
-    <QtRcc Include="src\SzViewer.qrc" />
-    <QtUic Include="src\SzViewer.ui" />
     <QtMoc Include="src\SzViewer.h" />
     <ClCompile Include="src\StatusStore.cpp" />
     <ClCompile Include="src\SzViewer.cpp" />
@@ -108,10 +114,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\IJsonSerializable.h" />
+    <QtMoc Include="src\textviewer\TextToolbar.h" />
     <QtMoc Include="src\textviewer\TextSearchDialog.h" />
     <QtMoc Include="src\AboutDialog.h" />
     <QtMoc Include="src\imageviewer\ImageViewContainer.h" />
     <QtMoc Include="src\imageviewer\ImageView.h" />
+    <QtMoc Include="src\imageviewer\ImageToolBar.h" />
+    <ClInclude Include="src\imageviewer\ImageSettingProps.h" />
     <ClInclude Include="src\textviewer\TextSettingProps.h" />
     <QtMoc Include="src\textviewer\TextSettingDialog.h" />
     <ClInclude Include="src\StatusStore.h" />

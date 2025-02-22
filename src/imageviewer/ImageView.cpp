@@ -18,8 +18,9 @@ ImageView::ImageView(QWidget* parent, ScaleMode scaleMode , int percentage)
 
 void ImageView::loadImage(QString& filePath)
 {
-	m_filePath = filePath;
-    QFileInfo fileInfo(m_filePath);
+    qDebug() << "filePath : " << filePath;
+
+    QFileInfo fileInfo(filePath);
     QString suffix = fileInfo.suffix().toLower();
 
     // 이전에 movie가 사용 중이면 정지시킵니다.
@@ -29,55 +30,65 @@ void ImageView::loadImage(QString& filePath)
     }
 
     if (suffix == "gif") {
-        QMovie* qMovie = createGif(m_filePath, m_label);
-        if (qMovie == nullptr) {
-            return;
-        }
         m_isGif = true;
-		m_label->adjustSize(); 
+        m_originMovie = new QMovie(filePath, QByteArray(), m_label);
+        m_originMovie->jumpToFrame(0);
+		m_originSize = m_originMovie->currentPixmap().size();
     }
     else {
-        QPixmap* qPixMap = createImg(m_filePath, m_label);
-        if (qPixMap == nullptr) {
-            return;
-        }
         m_isGif = false;
-        m_label->adjustSize();
+        m_pixmap = new QPixmap(filePath);
+		m_originSize = m_pixmap->size();
     }
+	resize(m_scaleMode, m_percentage);
 }
 
 void ImageView::resize(ScaleMode mode, int percentage) {
 	m_scaleMode = mode;
 	m_percentage = percentage;
-	loadImage(m_filePath);
+	if (m_originMovie == nullptr && m_pixmap == nullptr) {
+		return;
+	}
+
+	if (m_isGif) {
+		setGif(m_originMovie, m_label);
+	}
+	else {
+		setImg(m_pixmap, m_label);
+	}
+    m_label->adjustSize();
 }
 
-QMovie* ImageView::createGif(QString& filePath, QLabel* label) {
-    QMovie* movie = new QMovie(filePath, QByteArray(), label);
+void ImageView::setGif(QMovie* movie, QLabel* label) {
     if (!movie->isValid())
     {
-        qDebug() << "GIF 로드 실패:" << filePath;
-        delete movie;
-        return nullptr;
+        m_label->movie()->stop();
+        m_label->setMovie(nullptr);
+        label->clear();
+        label->setText("can not load gif");
+        return;
     }
-    movie->jumpToFrame(0);
-    movie = getScaledQMovie(movie, movie->currentPixmap().size(), m_scaleMode, m_percentage);
+    m_originMovie->jumpToFrame(0);
+    movie = getScaledQMovie(movie, m_originSize, m_scaleMode, m_percentage);
+    qDebug() << "m_originSize : " << m_originSize;
     label->setPixmap(QPixmap()); // 기존 이미지는 초기화
     label->setMovie(movie);
     movie->start();
-    return movie;
 }
 
-QPixmap* ImageView::createImg(QString& filePath, QLabel* label) {
-        QPixmap pixmap(filePath);
-        if (pixmap.isNull())
+void ImageView::setImg(QPixmap* pixmap, QLabel* label) {
+	qDebug() << "setImg";
+        if (pixmap->isNull())
         {
-            qDebug() << "이미지 로드 실패:" << filePath;
-            return nullptr;
+            qDebug() << "이미지 로드 실패:" ;
+			label->clear();
+			label->setText("can not load Image");
+            return;
         }
-        pixmap = getScaledPixmap(&pixmap, pixmap.size(), m_scaleMode, m_percentage);
-        label->setPixmap(pixmap);
-		return &pixmap;
+        qDebug() << "getScaledPixmap";
+
+        QPixmap newPixMap = getScaledPixmap(pixmap, m_originSize, m_scaleMode, m_percentage);
+        label->setPixmap(newPixMap);
 }
 
 QMovie* ImageView::getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mode, int percentage) {

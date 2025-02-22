@@ -280,23 +280,32 @@ int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
 }
 
 bool TextViewContainer::eventFilter(QObject* watched, QEvent* event) {
+
+	if (this->isVisible() == false) {
+	    return QWidget::eventFilter(watched, event);
+	}
+
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_PageDown) {
+			qDebug() << "text : Page Down";
             QString next = getNextOrPrevFileName(1);
             if (!next.isEmpty()) {
                 loadText(next);
             }
         }
         else if (keyEvent->key() == Qt::Key_PageUp) {
+			qDebug() << "text : Page Up";
             QString prev = getNextOrPrevFileName(-1);
             if (!prev.isEmpty()) {
                 loadText(prev);
             }
         }else if (keyEvent->key() == Qt::Key_Left) {
+			qDebug() << "text : Left";
             prevPage();
         }
         else if (keyEvent->key() == Qt::Key_Right) {
+			qDebug() << "text : Right";
             nextPage();
         }
 

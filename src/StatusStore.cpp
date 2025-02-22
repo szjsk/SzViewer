@@ -16,19 +16,16 @@ IJsonSerializable* StatusStore::loadSetting(IJsonSerializable* jsonObj)
 {
 
     QString fileName = jsonObj->getFileName();
-QFileInfo fileInfo(fileName);
-QString absolutePath = fileInfo.absoluteFilePath();
-qDebug() << "Saving settings to file:" << absolutePath;
+    QFileInfo fileInfo(fileName);
+    QString absolutePath = fileInfo.absoluteFilePath();
 
     QFile loadFile(jsonObj->getFileName());
     if (!loadFile.open(QIODevice::ReadOnly)) {
         return jsonObj;
     }
-    qDebug() << "2";
 
     QByteArray data = loadFile.readAll();
     loadFile.close();
-    qDebug() << "3";
 
     QJsonDocument loadDoc = QJsonDocument::fromJson(data);
     if (!loadDoc.isNull() && loadDoc.isObject())
@@ -59,12 +56,24 @@ void StatusStore::saveSetting(IJsonSerializable* jsonObj)
 
 TextSettingProps StatusStore::getTextSettings() {
 
-    loadSetting(&textSettingProps);
+    loadSetting(&m_textSettingProps);
 
-    return textSettingProps;
+    return m_textSettingProps;
 }
 
 void StatusStore::setTextSettings(const TextSettingProps& newSettings) {
-    textSettingProps = newSettings;
-    saveSetting(&textSettingProps);
+    m_textSettingProps = newSettings;
+    saveSetting(&m_textSettingProps);
+}
+
+ImageSettingProps StatusStore::getImageSettings() {
+
+    loadSetting(&m_imageSettingProps);
+
+    return m_imageSettingProps;
+}
+
+void StatusStore::setImageSettings(const ImageSettingProps& newSettings) {
+    m_imageSettingProps = newSettings;
+    saveSetting(&m_imageSettingProps);
 }

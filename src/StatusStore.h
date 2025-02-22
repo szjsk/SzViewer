@@ -5,6 +5,7 @@
 #include <QColor>
 #include <QMargins>
 #include "textviewer/TextSettingProps.h"
+#include "imageviewer/ImageSettingProps.h"
 #include "IJsonSerializable.h"
 #include <QFileInfo>
 
@@ -21,6 +22,8 @@ public:
 
     TextSettingProps getTextSettings();
     void setTextSettings(const TextSettingProps& settings);
+    ImageSettingProps getImageSettings();
+	void setImageSettings(const ImageSettingProps& settings);
 
 private:
     StatusStore();
@@ -28,7 +31,9 @@ private:
     StatusStore(const StatusStore&) = delete;
     StatusStore& operator=(const StatusStore&) = delete;
 
-    TextSettingProps textSettingProps;
+    TextSettingProps m_textSettingProps;
+    ImageSettingProps m_imageSettingProps;
+
 };
 
 #endif // StatusStore_H

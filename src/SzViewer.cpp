@@ -4,13 +4,17 @@ SzViewer::SzViewer(QWidget *parent)
     : QMainWindow(parent)
 {
 
-    m_ui.setupUi(this);
+    //창 설정.
+    QSettings settings("SzViewer", "SzViewer-Common");
+    QRect geom = settings.value("geometry", QRect(100, 100, 1024, 768)).toRect();
+    setGeometry(geom);
+
     m_stackedWidget = new QStackedWidget(this);
 
     m_textViewContainer = new TextViewContainer(this, StatusStore::instance().getTextSettings());
     m_stackedWidget->addWidget(m_textViewContainer);
 
-    m_imageViewContainer = new ImageViewContainer(this);
+    m_imageViewContainer = new ImageViewContainer(this, StatusStore::instance().getImageSettings());
     m_stackedWidget->addWidget(m_imageViewContainer);
 
     this->setCentralWidget(m_stackedWidget);
@@ -18,105 +22,103 @@ SzViewer::SzViewer(QWidget *parent)
     // 드래그 앤 드롭 활성화
     setAcceptDrops(true);
 
+	QToolBar* leftToolBar = CommonLeft();
+    m_textToolBar = new TextToolBar(this, m_textViewContainer);
+    m_imageToolBar = new ImageToolBar(this, m_imageViewContainer);
+    QToolBar* rightToolBar = CommonRight();
 
-    QAction* fileOpenAction = new QAction(QIcon(":/path/to/icon.png"), "Open", this);
-    connect(fileOpenAction, &QAction::triggered, this, &SzViewer::openFileDialog);
-    m_ui.menuBar->addAction(fileOpenAction);
+    // 두 툴바를 한 줄에 배치할 컨테이너 위젯 생성
+    QWidget* topToolBarContainer = new QWidget(this);
+    QHBoxLayout* topToolBarLayout = new QHBoxLayout(topToolBarContainer);
+    topToolBarLayout->setContentsMargins(0, 0, 0, 0);
+    topToolBarLayout->setSpacing(0);
+    topToolBarLayout->setAlignment(Qt::AlignLeft);
 
-    QAction* settingAction = new QAction(QIcon(":/path/to/icon.png"), "Setting", this);
-    connect(settingAction, &QAction::triggered, this, &SzViewer::openFontDialog);
-    m_ui.menuBar->addAction(settingAction);
+    topToolBarLayout->addWidget(leftToolBar, 0);
+    topToolBarLayout->addWidget(m_textToolBar, 0);
+    topToolBarLayout->addWidget(m_imageToolBar, 0);
+    topToolBarLayout->addWidget(rightToolBar, 0);
 
-    QAction* searchAction = new QAction(QIcon(":/path/to/icon.png"), "Search", this);
-    connect(searchAction, &QAction::triggered, this, &SzViewer::openSearchDialog);
-    m_ui.menuBar->addAction(searchAction);
+    // QMainWindow의 메뉴바 영역에 배치 (메뉴바 영역으로 사용)
+    this->setMenuWidget(topToolBarContainer);
 
-    QAction* splitAction = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
-
-    // 클릭 시 동작 정의
-    connect(splitAction, &QAction::triggered, this, [this]() {
-        TextSettingProps setting = StatusStore::instance().getTextSettings();
-        setting.setSplitView(m_textViewContainer->changeSplitView());
-		StatusStore::instance().saveSetting(&setting);
-     });
-
-    // 메뉴바에 아이콘 버튼 추가
-
-    m_ui.menuBar->addAction(splitAction);
-
-
-    QAction* helpAction = new QAction(QIcon(":/path/to/icon.png"), "Help", this);
-    connect(helpAction, &QAction::triggered, this, [this]() {
-        AboutDialog dialog(this);
-		dialog.exec();
-    });
-    m_ui.menuBar->addAction(helpAction);
-    
-
-    QAction* imageAction = new QAction(QIcon(":/path/to/icon.png"), "image", this);
-    connect(imageAction, &QAction::triggered, this, [this]() {
-        if (m_imageViewContainer->isVisible()) {
-            m_stackedWidget->setCurrentWidget(m_textViewContainer);
-            m_imageViewContainer->setVisible(false);
-            m_textViewContainer->setVisible(true);
-        }
-        else {
-            m_stackedWidget->setCurrentWidget(m_imageViewContainer);
-            m_textViewContainer->setVisible(false);
-            m_imageViewContainer->setVisible(true);
-        }
-
-        });
-    m_ui.menuBar->addAction(imageAction);
-
-   // this->installEventFilter(this);
+	changeVisible(false);
 
 }
 
 SzViewer::~SzViewer()
 {
+    QSettings settings("SzViewer", "SzViewer-Common");
+    settings.setValue("geometry", this->geometry());
 }
 
-void SzViewer::openSearchDialog()
-{
-    TextSearchDialog dialog(this, m_textViewContainer->getTextChunks());
-    connect(&dialog, &TextSearchDialog::rowSelected, this, &SzViewer::goToTextPage);
-    dialog.exec();
+QToolBar* SzViewer::CommonLeft() {
+    QToolBar* toolBar = new QToolBar(this);
+    toolBar->setMovable(true);
+    QAction* fileOpenAction = new QAction(QIcon(":/path/to/icon.png"), "Open", this);
+    connect(fileOpenAction, &QAction::triggered, this, &SzViewer::openFileDialog);
+    toolBar->addAction(fileOpenAction);
+
+    return toolBar;
 }
 
-void SzViewer::goToTextPage(const QString& searchText, long page, long line)
-{
-	m_textViewContainer->findPage(searchText, page, line);
+QToolBar* SzViewer::CommonRight() {
+    QToolBar* toolBar = new QToolBar(this);
+    toolBar->setMovable(true);
+    QAction* imageAction = new QAction(QIcon(":/path/to/icon.png"), "changeView", this);
+    connect(imageAction, &QAction::triggered, this, [this]() { changeVisible(!m_imageViewContainer->isVisible());});
+    toolBar->addAction(imageAction);
+
+    QAction* helpAction = new QAction(QIcon(":/path/to/icon.png"), "Help", this);
+    connect(helpAction, &QAction::triggered, this, [this]() {
+        AboutDialog dialog(this);
+        dialog.exec();
+        });
+    toolBar->addAction(helpAction);
+
+    return toolBar;
+}
+
+void SzViewer::changeVisible(bool isCurrentTextView) {
+    if (isCurrentTextView) {
+        m_stackedWidget->setCurrentWidget(m_imageViewContainer);
+        m_imageToolBar->setVisible(true);
+        m_imageViewContainer->setVisible(true);
+        m_textToolBar->setVisible(false);
+        m_textViewContainer->setVisible(false);
+    }
+    else {
+        m_stackedWidget->setCurrentWidget(m_textViewContainer);
+        m_imageToolBar->setVisible(false);
+        m_imageViewContainer->setVisible(false);
+        m_textToolBar->setVisible(true);
+        m_textViewContainer->setVisible(true);
+    }
 }
 
 void SzViewer::openFileDialog()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "Open File",
-        QDir::currentPath(), "Text Files (*.txt);;Image Files (*.jpg)");
-
-    openFile(fileName);
-}
-
-void SzViewer::openFontDialog()
-{
-    TextSettingDialog dialog(StatusStore::instance().getTextSettings(), this);
-    connect(&dialog, &TextSettingDialog::settingsChanged, this, &SzViewer::updateSettingPreview);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        TextSettingProps settings = dialog.getTextSettings();
-		StatusStore::instance().saveSetting(&settings);
-        m_textViewContainer->refreshPage();
-    }
+	if (m_textViewContainer->isVisible()) {
+		QString fileName = QFileDialog::getOpenFileName(this, "Open File",
+			QDir::currentPath(), "Text Files (*.txt)");
+		openFile(fileName);
+	}
     else {
-        m_textViewContainer->setSettings(StatusStore::instance().getTextSettings());
-        m_textViewContainer->refreshPage();
+        QString fileName = QFileDialog::getOpenFileName(this, "Open File",
+            QDir::currentPath(), "Image Files (*.jpg *.jpeg *.png *.bmp *.gif *.webp)");
+
+        openFile(fileName);
     }
 
 }
-
 
 void SzViewer::resizeEvent(QResizeEvent* event) {
-    m_textViewContainer->refreshPage();
+    if (m_imageViewContainer->isVisible()) {
+        //todo
+    }
+    else if (m_textViewContainer->isVisible()) {
+        m_textViewContainer->refreshPage();
+    }
 }
 
 // 드래그 엔터 이벤트 처리 : 파일이면 받아들임.
@@ -158,25 +160,15 @@ void SzViewer::openFile(QString& fileName) {
     QFileInfo fileInfo(fileName);
     QString suffix = fileInfo.suffix().toLower();
 
-    if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif") {
+    if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp") {
         qDebug() << "이미지 파일 :: " << fileName;
         // 예: 이미지 파일을 처리하는 로직 추가
         // 예를 들면 이미지 뷰어 위젯에 이미지를 표시하는 방식 등이 있을 수 있음.
-        m_stackedWidget->setCurrentWidget(m_imageViewContainer);
-        m_textViewContainer->setVisible(false);
-        m_imageViewContainer->setVisible(true);
-        m_imageViewContainer->loadImage(fileName, 0);
+        changeVisible(true);
+        m_imageViewContainer->loadFileList(fileName);
     }
     else {
-        m_stackedWidget->setCurrentWidget(m_imageViewContainer);
-        m_textViewContainer->setVisible(false);
-        m_imageViewContainer->setVisible(true);
+        changeVisible(false);
         m_textViewContainer->loadText(fileName);
     }
-}
-
-void SzViewer::updateSettingPreview(const TextSettingProps& settings)
-{
-    // 즉시 반영
-	m_textViewContainer->setSettings(settings);
 }

@@ -1,13 +1,14 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-#include "ui_SzViewer.h"
 #include "textviewer/TextViewContainer.h"
 #include "textviewer/TextSettingDialog.h"
 #include "textviewer/TextSearchDialog.h"
+#include "textviewer/TextToolBar.h"
 #include "AboutDialog.h"
 #include "StatusStore.h"
 #include "imageviewer/ImageViewContainer.h"
+#include "imageviewer/ImageToolbar.h"
 
 #include <qfiledialog.h>
 #include <QMimeData>
@@ -15,6 +16,9 @@
 #include <QDropEvent>
 #include <QFontDialog>
 #include <QStackedWidget>
+#include <QMenuBar>
+#include <QToolbar>
+#include <QSettings>
 
 class SzViewer : public QMainWindow
 {
@@ -25,23 +29,22 @@ public:
     ~SzViewer();
 
 private:
-    Ui::SzViewerClass m_ui;
     TextViewContainer* m_textViewContainer;
     ImageViewContainer* m_imageViewContainer;
 	QStackedWidget* m_stackedWidget;
-
+    TextToolBar* m_textToolBar;
+    ImageToolBar* m_imageToolBar;
     bool isTextFile(const QString& fileName);
     void openFile(QString& fileName);
-    void goToTextPage(const QString& searchText, long page, long line);
 
 protected:
     void resizeEvent(QResizeEvent* event);
     void dropEvent(QDropEvent* event);
 	void dragEnterEvent(QDragEnterEvent* event);
+    QToolBar* CommonLeft();
+    QToolBar* CommonRight();
+    void changeVisible(bool isCurrentTextView);
 
 private slots:
     void openFileDialog();
-    void openFontDialog();
-    void openSearchDialog();
-    void updateSettingPreview(const TextSettingProps& settings);
 };
