@@ -96,7 +96,9 @@ QMovie* ImageView::getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mo
 
     switch (mode) {
         case FitToWindow: {
-            movie->setScaledSize(this->size());
+            QSize containerSize = this->size();
+            QSize scaledSize = originSize.scaled(containerSize, Qt::KeepAspectRatio);
+            movie->setScaledSize(scaledSize);
             break;
         }case FitToWidth: {
             QSize newSize(this->size().width()- scrollSize, originSize.height());
