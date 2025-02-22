@@ -81,17 +81,18 @@ QPixmap* ImageView::createImg(QString& filePath, QLabel* label) {
 }
 
 QMovie* ImageView::getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mode, int percentage) {
-    
+    int scrollSize = 20;
+
     switch (mode) {
         case FitToWindow: {
             movie->setScaledSize(this->size());
             break;
         }case FitToWidth: {
-            QSize newSize(this->size().width(), originSize.height());
+            QSize newSize(this->size().width()- scrollSize, originSize.height());
             movie->setScaledSize(newSize);
             break;
         } case FitToHeight: {
-            QSize newSize(originSize.width(), this->size().height());
+            QSize newSize(originSize.width(), this->size().height()- scrollSize);
             movie->setScaledSize(newSize);
             break;
         }case ScaleByPercentage: {
@@ -108,13 +109,14 @@ QMovie* ImageView::getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mo
 }
 
 QPixmap ImageView::getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode mode, int percentage) {
+	int scrollSize = 20;
     switch (mode) {
     case FitToWindow:
         return pixmap->scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    case FitToWidth:
-        return pixmap->scaled(this->size().width(), originSize.height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    case FitToHeight:
-        return pixmap->scaled(originSize.width(), this->size().height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    case FitToWidth: {
+        return pixmap->scaled(this->size().width() - scrollSize, originSize.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    }case FitToHeight:
+        return pixmap->scaled(originSize.width(), this->size().height() - scrollSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     case ScaleByPercentage:
         return pixmap->scaled(pixmap->size().width() * percentage / 100, pixmap->size().height() * percentage / 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     case ORIGINAL:
