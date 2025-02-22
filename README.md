@@ -33,9 +33,9 @@
 - *.jpg, *.jpeg, *.png, *.bmp, *.gif 만 지원합니다.  
 - *webp*는 지원 예정입니다.
 
-![SzViewer Image](resources/szViewer5.png)
+![SzViewer Image](resources/szViewer-img-1.png)
 
-![SzViewer Image](resources/szViewer6.png)
+![SzViewer Image](resources/szViewer-img-2.png)
 
 
 텍스트 뷰어
