@@ -58,7 +58,9 @@ QHBoxLayout* ImageViewContainer::createSlider() {
 
 void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
 	QString file = navigateToFolder(m_fileName, moveMode);
-    loadFileList(file);
+    if (!file.isEmpty()) {
+        loadFileList(file);
+    }
 }
 
 QString ImageViewContainer::navigateToFolder(QString fileName, ImageView::MoveMode moveMode) {
