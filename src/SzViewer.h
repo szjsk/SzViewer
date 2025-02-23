@@ -7,6 +7,7 @@
 #include "textviewer/TextToolBar.h"
 #include "AboutDialog.h"
 #include "StatusStore.h"
+#include "DeleteFilesDialog.h"
 #include "imageviewer/ImageViewContainer.h"
 #include "imageviewer/ImageToolbar.h"
 
@@ -19,6 +20,7 @@
 #include <QMenuBar>
 #include <QToolbar>
 #include <QSettings>
+#include <QCollator>
 
 class SzViewer : public QMainWindow
 {
@@ -34,6 +36,7 @@ private:
 	QStackedWidget* m_stackedWidget;
     TextToolBar* m_textToolBar;
     ImageToolBar* m_imageToolBar;
+    bool m_deleteFolder = false;
     bool isTextFile(const QString& fileName);
     void openFile(QString& fileName);
 
@@ -47,4 +50,5 @@ protected:
 
 private slots:
     void openFileDialog();
+	void handleDeleteKey(QStringList files, QString nextFile);
 };

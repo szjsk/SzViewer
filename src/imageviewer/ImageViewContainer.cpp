@@ -35,6 +35,16 @@ ImageViewContainer::ImageViewContainer(QWidget* parent, const ImageSettingProps&
 
 }
 
+void ImageViewContainer::clear() {
+	m_imageView[0]->clear();
+	m_imageView[1]->clear();
+	m_fileList.clear();
+	m_currentIndex = 0;
+	m_qSlider->setValue(0);
+	m_qSlider->setMaximum(0);
+	m_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex + 1).arg(m_qSlider->maximum() + 1));
+}
+
 QHBoxLayout* ImageViewContainer::createSlider() {
     QHBoxLayout* hBoxSlider = new QHBoxLayout();
     m_qSlider = new QSlider(Qt::Horizontal, this);
@@ -47,23 +57,28 @@ QHBoxLayout* ImageViewContainer::createSlider() {
 }
 
 void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
+	QString file = navigateToFolder(m_fileName, moveMode);
+    loadFileList(file);
+}
+
+QString ImageViewContainer::navigateToFolder(QString fileName, ImageView::MoveMode moveMode) {
 
     // 현재 파일이 속한 폴더
-    QFileInfo currentFileInfo(m_fileName);
+    QFileInfo currentFileInfo(fileName);
     QDir currentFolder = currentFileInfo.dir();
 
     // 부모 폴더로 이동
     QDir parentDir = currentFolder;
     if (!parentDir.cdUp()) {
         qDebug() << "부모 폴더로 이동 실패";
-        return;
+        return QString();
     }
 
     // 부모 폴더 내의 모든 서브 폴더 리스트 (알파벳 순)
     QStringList folderNames = parentDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
     if (folderNames.isEmpty()) {
         qDebug() << "부모 폴더에 하위 폴더가 없습니다.";
-        return;
+        return QString();
     }
 
     QCollator collator;
@@ -78,7 +93,7 @@ void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
     int index = folderNames.indexOf(currentFolderName);
     if (index < 0) {
         qDebug() << "현재 폴더를 부모 폴더 내에서 찾을 수 없습니다.";
-        return;
+        return QString();
     }
 
     // next 또는 prev 폴더 인덱스 계산
@@ -93,7 +108,7 @@ void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
     // 범위를 벗어나면 아무것도 하지 않음
     if (nextIndex < 0 || nextIndex >= folderNames.size()) {
         qDebug() << "폴더 이동 범위를 벗어났습니다.";
-        return;
+        return QString();
     }
 
     // 다음(또는 이전) 폴더 경로 결정
@@ -109,11 +124,10 @@ void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
 
 	if (!fileNames.isEmpty()) {
         QString file = nextFolder.absoluteFilePath(fileNames[0]);
-        loadFileList(file);
-		return;
+        //loadFileList(file);
+		return file;
 	}
-
-	
+    return QString();
 }
 
 void ImageViewContainer::loadFileList(QString& filePath) {
@@ -206,7 +220,8 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
     if (currentIndex < 0 || currentIndex >= m_fileList.size()) {
         return;
     }
-
+    QString fileName0;
+    QString fileName1;
     // 분할 모드인 경우
     if (m_settings.isSplitView()) {
         // 첫 번째 이미지는 짝수 인덱스가 되도록 보정
@@ -214,12 +229,12 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
             currentIndex--;
         }
         // 첫번째 이미지 로드
-        QString fileName0 = m_fileList.at(currentIndex);
+        fileName0 = m_fileList.at(currentIndex);
         m_imageView[0]->loadImage(fileName0);
 
         // 두번째 이미지 로드: 다음 이미지(홀수 인덱스)가 존재하면 로드, 없으면 빈 문자열 전달
         if (currentIndex + 1 < m_fileList.size()) {
-            QString fileName1 = m_fileList.at(currentIndex + 1);
+            fileName1 = m_fileList.at(currentIndex + 1);
             m_imageView[1]->loadImage(fileName1);
         }
         else {
@@ -229,12 +244,14 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
     }
     // 단일 뷰 모드인 경우
     else {
-        QString fileName0 = m_fileList.at(currentIndex);
+        fileName0 = m_fileList.at(currentIndex);
         m_imageView[0]->loadImage(fileName0);
     }
 
     m_currentIndex = currentIndex;
     m_qSlider->setValue(m_currentIndex);
+    this->window()->setWindowTitle(QString("SzViewer - %1       /        %2").arg(fileName0).arg(fileName1));
+
 
 }
 
@@ -247,10 +264,10 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
     if (event->type() == QEvent::KeyRelease) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_PageDown) {
-			navigateToFile(ImageView::MoveMode::NextFolder);
+			navigateToFolder(ImageView::MoveMode::NextFolder);
         }
         else if (keyEvent->key() == Qt::Key_PageUp) {
-            navigateToFile(ImageView::MoveMode::PrevFolder);
+            navigateToFolder(ImageView::MoveMode::PrevFolder);
         }
 		else if (keyEvent->key() == Qt::Key_Left) {
 			navigateToFile(ImageView::MoveMode::Prev);
@@ -275,6 +292,8 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
         }
         else if ((keyEvent->key() == Qt::Key_Minus || keyEvent->key() == Qt::Key_6) && m_percentage > 10) {
             sizeChange(ImageView::ScaleMode::ScaleByPercentage, m_percentage - 10);
+        }else if (keyEvent->key() == Qt::Key_Delete && !m_fileList.isEmpty() && m_currentIndex < m_fileList.size() && m_currentIndex >= 0) {
+            deleteImageFile();
         }
         return false;  // 이벤트를 가로채서 처리 완료
     }
@@ -295,4 +314,22 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
     }
 
     return QWidget::eventFilter(watched, event);
+}
+
+void ImageViewContainer::deleteImageFile() {
+    QStringList files;
+    QString nextFile;
+    files.append(m_fileList.at(m_currentIndex));
+    int nextIndex = m_currentIndex + 1;
+    if (m_settings.isSplitView() && nextIndex < m_fileList.size()) {
+        files.append(m_fileList.at(nextIndex));
+        nextIndex++;
+    }
+    m_imageView[0]->movieStop();
+    m_imageView[1]->movieStop();
+
+    nextIndex = nextIndex >= m_fileList.size() ? nextIndex + (m_currentIndex - nextIndex) : nextIndex;
+    nextIndex = nextIndex < 0 ? 0 : nextIndex;
+
+    emit deleteKeyPressed(files, m_fileList.at(nextIndex));
 }

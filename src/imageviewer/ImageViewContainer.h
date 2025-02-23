@@ -24,8 +24,11 @@ public:
 	void loadFileList(QString& filePath);
 	bool changeSplitView();
 	void navigateToFile(ImageView::MoveMode moveMode);
+	QString navigateToFolder(QString fileName, ImageView::MoveMode moveMode);
 	void navigateToFolder(ImageView::MoveMode moveMode);
 	void resizeImage(ImageView::ScaleMode scaleMode, int plusMinus);
+	void deleteImageFile();
+	void clear();
 
 private:
 	static constexpr int M_IMAGE_BROWSER_CNT = 2;
@@ -44,6 +47,9 @@ private:
 
 protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
+
+signals:
+	void deleteKeyPressed(QStringList files , QString nextFile);
 };
 
 #endif // IMAGEVIEWCONTAINER_H

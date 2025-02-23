@@ -22,6 +22,10 @@ TextToolBar::TextToolBar(QWidget* parent, TextViewContainer* textViewContainer)
         setting.setSplitView(m_textViewContainer->changeSplitView());
         StatusStore::instance().saveSetting(&setting);
         });
+
+    QAction* move6Action = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
+    connect(move6Action, &QAction::triggered, this, [this]() {m_textViewContainer->deleteFile();});
+    this->addAction(move6Action);
 }
 
 void TextToolBar::openSearchDialog()

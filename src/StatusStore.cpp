@@ -31,7 +31,6 @@ IJsonSerializable* StatusStore::loadSetting(IJsonSerializable* jsonObj)
     if (!loadDoc.isNull() && loadDoc.isObject())
     {
         QJsonObject json = loadDoc.object();
-		qDebug() << "Loading json:" << json;
         jsonObj->fromJson(json);
     }
     return jsonObj;

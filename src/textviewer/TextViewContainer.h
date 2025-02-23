@@ -31,6 +31,8 @@ public:
     void setSettings(const TextSettingProps& s);
     QHash<long, QVector<QString>>* getTextChunks();
     void findPage(const QString&, long page, long line);
+	void deleteFile();
+	void clear();
 
 private:
     static constexpr int M_TEXT_BROWSER_CNT = 2;
@@ -57,6 +59,9 @@ private:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
+
+signals:
+    void deleteKeyPressed(QStringList files, QString nextFile);
 
 };
 

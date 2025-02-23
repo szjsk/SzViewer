@@ -40,6 +40,18 @@ TextViewContainer::TextViewContainer(QWidget* parent, const TextSettingProps& se
 
 }
 
+void TextViewContainer::clear() {
+	m_textBrowserArray[0]->clear();
+	m_textBrowserArray[1]->clear();
+	m_textChunks.clear();
+	m_text.clear();
+	m_fileName.clear();
+	m_currentPosition = 0;
+	m_qSlider->setValue(0);
+	m_qSlider->setMaximum(0);
+	m_qSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
+}
+
 QTextBrowser* TextViewContainer::createTextBrowser() {
 
     QTextBrowser* tb = new QTextBrowser(this);
@@ -65,13 +77,9 @@ void TextViewContainer::loadText(QString& filePath) {
 
     m_fileName = filePath;
 
-    QElapsedTimer timer;
-    timer.start();
     QTextStream in(&file);
     m_text = in.readAll();    
     file.close();
-
-    qDebug() << "file load time :" << timer.elapsed()/1000 << "s";
 
     //init
     m_currentPosition = 0;
@@ -173,8 +181,6 @@ void TextViewContainer::refreshStyle(QTextBrowser* tb) {
         .arg(m_settings.getTextColor().name())
         ;
 
-    qDebug() << "lineHeight :: " << lineHeight  << ", m_settings.getLineSpacing() ::  " << m_settings.getLineSpacing() << ", height : " << tb->height();
-
     tb->setStyleSheet(style);
 	applyLineSpacing(tb);
 
@@ -193,10 +199,8 @@ void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
 }
 
 void TextViewContainer::refreshPage() {
-    QElapsedTimer timer;
 	m_textChunks.clear();
 
-    timer.start();
     int maxLine = getLineHeight(m_textBrowserArray[0]);
     int maxWidth = m_textBrowserArray[0]->viewport()->width() - (m_settings.getPadding().left() + m_settings.getPadding().right());
     
@@ -205,14 +209,12 @@ void TextViewContainer::refreshPage() {
     QFontMetrics fm(m_textBrowserArray[0]->font());
     int page = 0;
     QVector<QString> lines;
-    //qDebug() << "maxLine : " << maxLine << ", maxWidth : " << width;
 
     for (long i = 0; i < m_text.length(); i++) {
 		QChar c = m_text.at(i);
 		line.append(c);
         width += getFontWidth(&fm, c);
         if (c == '\n' || width >= maxWidth) {
-			//qDebug() << "lines.size() : " << lines.size() << ", width : " << width << "line : " << line;
             lines.append(line);
 			line.clear();
 			width = 0;
@@ -230,7 +232,6 @@ void TextViewContainer::refreshPage() {
 
     m_textChunks.insert(page++, lines);
 
-    qDebug() << "file split time :" << timer.elapsed() / 1000 << "s";
 	m_qSlider->setRange(1, m_textChunks.size());
     m_qSlider->setValue(m_currentPosition + 1);
     m_qSliderInfo->setText(QString("page: %1 / %2").arg(m_currentPosition+1).arg(m_qSlider->maximum()));
@@ -258,7 +259,6 @@ void TextViewContainer::setSettings(const TextSettingProps& s) {
 int TextViewContainer::getLineHeight(QTextBrowser* tb) {
     QFontMetrics fm(tb->font());
     int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
-	qDebug() << "lineHeight : " << lineHeight << " , " << fm.ascent();
 
     return ((tb->height() - (m_settings.getPadding().top()+ m_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
 }
@@ -288,27 +288,22 @@ bool TextViewContainer::eventFilter(QObject* watched, QEvent* event) {
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         if (keyEvent->key() == Qt::Key_PageDown) {
-			qDebug() << "text : Page Down";
             QString next = getNextOrPrevFileName(1);
             if (!next.isEmpty()) {
                 loadText(next);
             }
-        }
-        else if (keyEvent->key() == Qt::Key_PageUp) {
-			qDebug() << "text : Page Up";
+        }else if (keyEvent->key() == Qt::Key_PageUp) {
             QString prev = getNextOrPrevFileName(-1);
             if (!prev.isEmpty()) {
                 loadText(prev);
             }
         }else if (keyEvent->key() == Qt::Key_Left) {
-			qDebug() << "text : Left";
             prevPage();
-        }
-        else if (keyEvent->key() == Qt::Key_Right) {
-			qDebug() << "text : Right";
+        }else if (keyEvent->key() == Qt::Key_Right) {
             nextPage();
+        }else if (keyEvent->key() == Qt::Key_Delete && !m_fileName.isEmpty()) {
+            deleteFile();
         }
-
         return false;  // 이벤트를 가로채서 처리 완료
     }
 
@@ -318,23 +313,24 @@ bool TextViewContainer::eventFilter(QObject* watched, QEvent* event) {
         QPoint mousePos = static_cast<QWidget*>(watched)->mapTo(this, mouseEvent->pos());
 
         int centerX = this->width() / 2;
-        qDebug() << "Mouse Released " << mousePos.x() << " center : " << centerX;
 
         if (mousePos.x() < centerX) {
             prevPage();
-
-            qDebug() << "Mouse Released on the Left Side";
         }
         else {
             nextPage();
-
-            qDebug() << "Mouse Released on the Right Side";
         }
     }
 
     return QWidget::eventFilter(watched, event);
 }
 
+void TextViewContainer::deleteFile() {
+    QStringList files;
+    files.append(m_fileName);
+    
+    emit deleteKeyPressed(files, getNextOrPrevFileName(1));
+}
 
 QString TextViewContainer::getNextOrPrevFileName(int nextOrPrev) {
     QFileInfo fileInfo(m_fileName);

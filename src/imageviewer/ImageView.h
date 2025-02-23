@@ -35,6 +35,8 @@ public:
     explicit ImageView(QWidget* parent = nullptr, ScaleMode scaleMode = FitToWindow, int percentage = 100);
 	void loadImage(QString& filePath);
 	void resize(ScaleMode mode, int percentage);
+	void movieStop();
+	void clear();
 
 private:
 	QScrollArea* m_scrollArea;

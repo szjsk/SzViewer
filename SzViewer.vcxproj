@@ -93,6 +93,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\AboutDialog.cpp" />
+    <ClCompile Include="src\DeleteFilesDialog.cpp" />
     <ClCompile Include="src\imageviewer\ImageView.cpp" />
     <ClCompile Include="src\imageviewer\ImageViewContainer.cpp" />
     <ClCompile Include="src\imageviewer\ImageSettingProps.cpp" />
@@ -113,6 +114,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="src\DeleteFilesDialog.h" />
     <ClInclude Include="src\IJsonSerializable.h" />
     <QtMoc Include="src\textviewer\TextToolbar.h" />
     <QtMoc Include="src\textviewer\TextSearchDialog.h" />

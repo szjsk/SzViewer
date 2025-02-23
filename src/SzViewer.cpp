@@ -13,9 +13,11 @@ SzViewer::SzViewer(QWidget *parent)
 
     m_textViewContainer = new TextViewContainer(this, StatusStore::instance().getTextSettings());
     m_stackedWidget->addWidget(m_textViewContainer);
+    connect(m_textViewContainer, &TextViewContainer::deleteKeyPressed, this, &SzViewer::handleDeleteKey);
 
     m_imageViewContainer = new ImageViewContainer(this, StatusStore::instance().getImageSettings());
     m_stackedWidget->addWidget(m_imageViewContainer);
+    connect(m_imageViewContainer, &ImageViewContainer::deleteKeyPressed, this, &SzViewer::handleDeleteKey);
 
     this->setCentralWidget(m_stackedWidget);
 
@@ -50,6 +52,34 @@ SzViewer::~SzViewer()
 {
     QSettings settings("SzViewer", "SzViewer-Common");
     settings.setValue("geometry", this->geometry());
+}
+
+void SzViewer::handleDeleteKey(QStringList files, QString nextFile) {
+
+    QString nextFolderFile = m_imageViewContainer->isVisible() ? m_imageViewContainer->navigateToFolder(files[0], ImageView::MoveMode::NextFolder) : QString();
+
+    DeleteFilesDialog dialog(files, m_deleteFolder, this);
+    if (dialog.exec() == QDialog::Accepted) {
+        this->window()->setWindowTitle(QString("SzViewer"));
+
+        m_deleteFolder = dialog.isDeleteFolderChecked();
+        if (m_deleteFolder && m_imageViewContainer->isVisible()) {
+			m_imageViewContainer->loadFileList(nextFolderFile);
+        }
+        else if (!nextFile.isEmpty()) {
+            openFile(nextFile);
+        }
+        else if (m_imageViewContainer->isVisible()) {
+			m_imageViewContainer->clear();
+        }
+        else if (!m_imageViewContainer->isVisible()) {
+			m_textViewContainer->clear();
+        }
+    }
+    else {
+        openFile(files[0]);
+		qDebug() << "delete cancel";
+    }
 }
 
 QToolBar* SzViewer::CommonLeft() {
@@ -158,16 +188,39 @@ void SzViewer::dropEvent(QDropEvent* event)
 
 void SzViewer::openFile(QString& fileName) {
     QFileInfo fileInfo(fileName);
+    if (fileInfo.isDir()) {
+        QDir folder(fileName);
+        QStringList fileNames = folder.entryList(QDir::Files, QDir::Name);
+        // 확장자 필터링
+        QStringList filteredFileNames;
+        for (const QString& name : fileNames) {
+            QString suffix = QFileInfo(name).suffix().toLower();
+            if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp" || suffix == "txt" || suffix == "ini") {
+                filteredFileNames.append(name);
+            }
+        }
+        QCollator collator;
+        collator.setNumericMode(true);
+        std::sort(filteredFileNames.begin(), filteredFileNames.end(),
+            [&collator](const QString& s1, const QString& s2) {
+                return collator.compare(s1, s2) < 0;
+            });
+
+        if (filteredFileNames.isEmpty()) {
+            return;
+        }
+
+        fileInfo = QFileInfo(folder.absoluteFilePath(filteredFileNames[0]));
+    } 
     QString suffix = fileInfo.suffix().toLower();
 
     if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp") {
-        qDebug() << "이미지 파일 :: " << fileName;
         // 예: 이미지 파일을 처리하는 로직 추가
         // 예를 들면 이미지 뷰어 위젯에 이미지를 표시하는 방식 등이 있을 수 있음.
         changeVisible(true);
         m_imageViewContainer->loadFileList(fileName);
     }
-    else {
+    else if(suffix == "txt" || suffix == "ini") {
         changeVisible(false);
         m_textViewContainer->loadText(fileName);
     }

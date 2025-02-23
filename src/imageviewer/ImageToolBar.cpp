@@ -80,6 +80,10 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
         StatusStore::instance().saveSetting(&setting);
         });
 
+    QAction* deleteAction = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
+    connect(deleteAction, &QAction::triggered, this, [this]() {m_imageViewContainer->deleteImageFile();});
+    this->addAction(deleteAction);
+
 }
 
 void ImageToolBar::move(ImageView::MoveMode mode) {
