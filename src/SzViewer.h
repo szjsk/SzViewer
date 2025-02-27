@@ -1,26 +1,9 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
-#include "textviewer/TextViewContainer.h"
-#include "textviewer/TextSettingDialog.h"
-#include "textviewer/TextSearchDialog.h"
-#include "textviewer/TextToolBar.h"
-#include "AboutDialog.h"
-#include "StatusStore.h"
-#include "DeleteFilesDialog.h"
-#include "imageviewer/ImageViewContainer.h"
-#include "imageviewer/ImageToolbar.h"
+#include <QMenu>
+#include "common/HistoryProps.h"
 
-#include <qfiledialog.h>
-#include <QMimeData>
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QFontDialog>
-#include <QStackedWidget>
-#include <QMenuBar>
-#include <QToolbar>
-#include <QSettings>
-#include <QCollator>
 
 class SzViewer : public QMainWindow
 {
@@ -31,14 +14,9 @@ public:
     ~SzViewer();
 
 private:
-    TextViewContainer* m_textViewContainer;
-    ImageViewContainer* m_imageViewContainer;
-	QStackedWidget* m_stackedWidget;
-    TextToolBar* m_textToolBar;
-    ImageToolBar* m_imageToolBar;
-    bool m_deleteFolder = false;
     bool isTextFile(const QString& fileName);
-    void openFile(QString& fileName);
+    void openFile(QString fileName);
+    void addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryProps::SavedType type);
 
 protected:
     void resizeEvent(QResizeEvent* event);

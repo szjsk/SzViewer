@@ -2,7 +2,7 @@
 #include "TextSettingDialog.h"
 #include "TextSearchDialog.h"
 #include "TextSettingProps.h"
-
+#include "../common/StatusStore.h"
 #include <QAction>
 #include <QComboBox>
 #include <QPushButton>
@@ -54,17 +54,17 @@ void TextToolBar::openSearchDialog(TextViewContainer* textViewContainer)
 
 void TextToolBar::openSettingDialog(TextViewContainer* textViewContainer)
 {
-	TextSettingDialog dialog(textViewContainer->getTextSettingProps(), this);
+	TextSettingDialog dialog(StatusStore::instance().getTextSettings(), this);
 	connect(&dialog, &TextSettingDialog::settingsChanged, this, [this, textViewContainer](TextSettingProps settings) {
 		textViewContainer->changeStyle(settings);
 		});
 
 	if (dialog.exec() == QDialog::Accepted) {
-		textViewContainer->saveTextSettingProps(dialog.getTextSettings());
+		StatusStore::instance().saveTextSettings(dialog.getTextSettings());
 		textViewContainer->refreshPage(textViewContainer->getFileInfo()->currentPosition);
 	}
 	else {
-		textViewContainer->changeStyle(textViewContainer->getTextSettingProps());
+		textViewContainer->changeStyle(StatusStore::instance().getTextSettings());
 		textViewContainer->refreshPage(textViewContainer->getFileInfo()->currentPosition);
 	}
 

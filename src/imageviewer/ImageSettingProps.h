@@ -5,7 +5,7 @@
 #include <QColor>
 #include <QMargins>
 #include <QJsonObject>
-#include "../IJsonSerializable.h"
+#include "../common/IJsonSerializable.h"
 
 class ImageSettingProps : public IJsonSerializable
 {

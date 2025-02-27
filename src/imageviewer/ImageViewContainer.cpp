@@ -1,7 +1,17 @@
 #include "ImageViewContainer.h"
 
-ImageViewContainer::ImageViewContainer(QWidget* parent, const ImageSettingProps& settings)
-	: QWidget(parent), m_settings(settings)
+static constexpr int M_IMAGE_BROWSER_CNT = 2;
+QSlider* ui_qSlider;
+QLabel* ui_qSliderInfo;
+ImageView* ui_imageView[M_IMAGE_BROWSER_CNT];
+QStringList m_fileList;
+QString m_fileName;
+int m_currentIndex = 0;
+int m_percentage = 100;
+ImageView::ScaleMode m_scaleMode = ImageView::FitToWindow;
+
+ImageViewContainer::ImageViewContainer(QWidget* parent)
+	: QWidget(parent)
 {
  
     //main
@@ -12,12 +22,12 @@ ImageViewContainer::ImageViewContainer(QWidget* parent, const ImageSettingProps&
 	hBoxBrowser->setSpacing(0);  // 간격을 0으로 설정
 
     // hBoxBrowser에 두 스크롤 영역 추가
-	m_imageView[0] = new ImageView(this, ImageView::FitToWindow, 100);
-    hBoxBrowser->addWidget(m_imageView[0]);
-    m_imageView[1] = new ImageView(this, ImageView::FitToWindow, 100);
-    hBoxBrowser->addWidget(m_imageView[1]);
+	ui_imageView[0] = new ImageView(this, ImageView::FitToWindow, 100);
+    hBoxBrowser->addWidget(ui_imageView[0]);
+    ui_imageView[1] = new ImageView(this, ImageView::FitToWindow, 100);
+    hBoxBrowser->addWidget(ui_imageView[1]);
 
-    m_imageView[1]->setVisible(m_settings.isSplitView());
+    ui_imageView[1]->setVisible(StatusStore::instance().getImageSettings().isSplitView());
 
     vBoxContainer->addLayout(hBoxBrowser, 1);
 
@@ -27,31 +37,35 @@ ImageViewContainer::ImageViewContainer(QWidget* parent, const ImageSettingProps&
 	this->installEventFilter(this);
 
     // 슬라이더 값 변경 시 정보를 업데이트하는 람다 슬롯 연결
-    connect(m_qSlider, &QSlider::valueChanged, this, [this](int value) {
+    connect(ui_qSlider, &QSlider::valueChanged, this, [this](int value) {
         m_currentIndex = value;
         navigateToFile(ImageView::None);
-        m_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(m_qSlider->maximum()+1));
+        ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(ui_qSlider->maximum()+1));
         });
 
 }
 
+ImageViewContainer::~ImageViewContainer() {
+    //StatusStore::instance().saveImageHistory(StatusStore::instance().getImageHistory());
+}
+
 void ImageViewContainer::clear() {
-	m_imageView[0]->clear();
-	m_imageView[1]->clear();
+	ui_imageView[0]->clear();
+	ui_imageView[1]->clear();
 	m_fileList.clear();
 	m_currentIndex = 0;
-	m_qSlider->setValue(0);
-	m_qSlider->setMaximum(0);
-	m_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex + 1).arg(m_qSlider->maximum() + 1));
+	ui_qSlider->setValue(0);
+	ui_qSlider->setMaximum(0);
+	ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex + 1).arg(ui_qSlider->maximum() + 1));
 }
 
 QHBoxLayout* ImageViewContainer::createSlider() {
     QHBoxLayout* hBoxSlider = new QHBoxLayout();
-    m_qSlider = new QSlider(Qt::Horizontal, this);
-    hBoxSlider->addWidget(m_qSlider);
+    ui_qSlider = new QSlider(Qt::Horizontal, this);
+    hBoxSlider->addWidget(ui_qSlider);
 
-    m_qSliderInfo = new QLabel(this);
-    hBoxSlider->addWidget(m_qSliderInfo);
+    ui_qSliderInfo = new QLabel(this);
+    hBoxSlider->addWidget(ui_qSliderInfo);
 
 	return hBoxSlider;
 }
@@ -147,6 +161,8 @@ void ImageViewContainer::loadFileList(QString& filePath) {
             m_fileList.append(dir.absoluteFilePath(name));
         }
     }
+    //ui_qSlider->setValue(m_currentIndex);
+    ui_qSlider->setMaximum(m_fileList.size() - 1);
 
     QCollator collator;
     collator.setNumericMode(true);
@@ -155,13 +171,12 @@ void ImageViewContainer::loadFileList(QString& filePath) {
             return collator.compare(s1, s2) < 0;
         });
 
+
     m_currentIndex = m_fileList.indexOf(filePath);
 	m_currentIndex = m_currentIndex < 0 ? 0 : m_currentIndex;
     navigateToFile(ImageView::None);
 
-    m_qSlider->setValue(m_currentIndex);
-    m_qSlider->setMaximum(m_fileList.size()-1);
-    m_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(m_qSlider->maximum()+1));
+    ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(ui_qSlider->maximum()+1));
 
 
     this->window()->activateWindow();
@@ -182,16 +197,17 @@ void ImageViewContainer::sizeChange(ImageView::ScaleMode mode , int percentage) 
     m_scaleMode = mode;
     m_percentage = percentage;
 	for (int i = 0; i < M_IMAGE_BROWSER_CNT; i++) {
-		if (m_imageView[i]->isVisible()) {
-			m_imageView[i]->resize(m_scaleMode, m_percentage);
+		if (ui_imageView[i]->isVisible()) {
+			ui_imageView[i]->resize(m_scaleMode, m_percentage);
 		}
 	}
 }
 
 bool ImageViewContainer::changeSplitView() {
-	bool newSplit = !m_imageView[1]->isVisible();
-    m_settings.setSplitView(newSplit);
-	m_imageView[1]->setVisible(newSplit);
+	bool newSplit = !ui_imageView[1]->isVisible();
+    StatusStore::instance().getImageSettings().setSplitView(newSplit);
+    
+	ui_imageView[1]->setVisible(newSplit);
 	navigateToFile(ImageView::None);
 	sizeChange(m_scaleMode, m_percentage);
 	return newSplit;
@@ -199,8 +215,9 @@ bool ImageViewContainer::changeSplitView() {
 }
 
 void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
+	bool isSplit = StatusStore::instance().getImageSettings().isSplitView();
     // split 모드이면 2씩 이동, 아니면 1씩 이동
-    int step = m_settings.isSplitView() ? 2 : 1;
+    int step = isSplit ? 2 : 1;
 
     int currentIndex = m_currentIndex;
     // 이동 모드에 따른 인덱스 변경
@@ -225,33 +242,33 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
     QString fileName0;
     QString fileName1;
     // 분할 모드인 경우
-    if (m_settings.isSplitView()) {
+    if (isSplit) {
         // 첫 번째 이미지는 짝수 인덱스가 되도록 보정
         if ((currentIndex % 2) != 0 && currentIndex > 0) {
             currentIndex--;
         }
         // 첫번째 이미지 로드
         fileName0 = m_fileList.at(currentIndex);
-        m_imageView[0]->loadImage(fileName0);
+        ui_imageView[0]->loadImage(fileName0);
 
         // 두번째 이미지 로드: 다음 이미지(홀수 인덱스)가 존재하면 로드, 없으면 빈 문자열 전달
         if (currentIndex + 1 < m_fileList.size()) {
             fileName1 = m_fileList.at(currentIndex + 1);
-            m_imageView[1]->loadImage(fileName1);
+            ui_imageView[1]->loadImage(fileName1);
         }
         else {
 			QString empty;
-            m_imageView[1]->loadImage(empty);
+            ui_imageView[1]->loadImage(empty);
         }
     }
     // 단일 뷰 모드인 경우
     else {
         fileName0 = m_fileList.at(currentIndex);
-        m_imageView[0]->loadImage(fileName0);
+        ui_imageView[0]->loadImage(fileName0);
     }
 
     m_currentIndex = currentIndex;
-    m_qSlider->setValue(m_currentIndex);
+    ui_qSlider->setValue(m_currentIndex);
     this->window()->setWindowTitle(QString("SzViewer - %1       /        %2").arg(fileName0).arg(fileName1));
 
 
@@ -323,12 +340,12 @@ void ImageViewContainer::deleteImageFile() {
     QString nextFile;
     files.append(m_fileList.at(m_currentIndex));
     int nextIndex = m_currentIndex + 1;
-    if (m_settings.isSplitView() && nextIndex < m_fileList.size()) {
+    if (StatusStore::instance().getImageSettings().isSplitView() && nextIndex < m_fileList.size()) {
         files.append(m_fileList.at(nextIndex));
         nextIndex++;
     }
-    m_imageView[0]->movieStop();
-    m_imageView[1]->movieStop();
+    ui_imageView[0]->movieStop();
+    ui_imageView[1]->movieStop();
 
     nextIndex = nextIndex >= m_fileList.size() ? nextIndex + (m_currentIndex - nextIndex) : nextIndex;
     nextIndex = nextIndex < 0 ? 0 : nextIndex;

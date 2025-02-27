@@ -1,8 +1,7 @@
 #include "TextViewContainer.h"
-#include "../StatusStore.h"
+#include "../common/StatusStore.h"
 #include "../common/FileUtils.h"
-
-#include "../StatusStore.h"
+#include "../common/StatusStore.h"
 
 #include <QHBoxLayout>
 #include <QFile>
@@ -25,8 +24,6 @@ QTextBrowser* ui_TextBrowsers[M_TEXT_BROWSER_CNT];
 QLabel* ui_QSliderInfo;
 QSlider* ui_QSlider;
 
-HistoryBookmarkProps m_history = StatusStore::instance().getTextHistory();
-TextSettingProps m_settings = StatusStore::instance().getTextSettings();;
 TextViewContainer::FileInfo m_fileInfo;
 
 TextViewContainer::TextViewContainer(QWidget* parent)
@@ -35,16 +32,18 @@ TextViewContainer::TextViewContainer(QWidget* parent)
 	//main
 	QVBoxLayout* vBoxContainer = new QVBoxLayout(this);
 
+	TextSettingProps textSetting = StatusStore::instance().getTextSettings();
+
 	//for textBrowser
 	QHBoxLayout* hBoxBrowser = new QHBoxLayout();
-	ui_TextBrowsers[0] = createTextBrowser(m_settings);
-	ui_TextBrowsers[1] = createTextBrowser(m_settings);
+	ui_TextBrowsers[0] = createTextBrowser(textSetting);
+	ui_TextBrowsers[1] = createTextBrowser(textSetting);
 	ui_TextBrowsers[0]->installEventFilter(this);
 
 	hBoxBrowser->addWidget(ui_TextBrowsers[0]);
 	hBoxBrowser->addWidget(ui_TextBrowsers[1]);
 
-	ui_TextBrowsers[1]->setVisible(m_settings.isSplitView());
+	ui_TextBrowsers[1]->setVisible(textSetting.isSplitView());
 
 	vBoxContainer->addLayout(hBoxBrowser, 1);
 
@@ -69,8 +68,7 @@ TextViewContainer::TextViewContainer(QWidget* parent)
 }
 
 TextViewContainer::~TextViewContainer() {
-	//save
-	saveHistory(m_history, &m_fileInfo);
+	//saveHistory(StatusStore::instance().getTextHistory(), &m_fileInfo);
 }
 
 void TextViewContainer::clear() {
@@ -102,10 +100,10 @@ void TextViewContainer::initTextFile(QString& filePath) {
 		return;
 	}
 
-	//    this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
-	saveHistory(m_history, &m_fileInfo);
+	this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
+	saveHistory(StatusStore::instance().getTextHistory(), &m_fileInfo);
 	m_fileInfo = TextViewContainer::FileInfo();
-	SavedFileInfo history = loadHistory(m_history, filePath);
+	SavedFileInfo history = loadHistory(StatusStore::instance().getTextHistory(), filePath);
 
 	QTextStream in(&file);
 	m_fileInfo.text = in.readAll();
@@ -210,7 +208,7 @@ void TextViewContainer::refreshStyle(TextSettingProps settings, QTextBrowser* tb
 
 void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
 	QFontMetrics fm(tb->font());
-	int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
+	int lineHeight = fm.lineSpacing() * StatusStore::instance().getTextSettings().getLineSpacing();
 
 	QTextCursor cursor(tb->document());
 	cursor.select(QTextCursor::Document);
@@ -220,27 +218,18 @@ void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
 	cursor.setBlockFormat(blockFormat);
 }
 
-TextSettingProps TextViewContainer::getTextSettingProps() {
-	return m_settings;
-}
-
-void TextViewContainer::saveTextSettingProps(TextSettingProps settings) {
-	StatusStore::instance().setTextSettings(settings);
-	m_settings = settings;
-}
-
 /*
 	Setting History
 */
 
-void TextViewContainer::saveHistory(HistoryBookmarkProps history, const FileInfo* fileInfo) {
+void TextViewContainer::saveHistory(HistoryProps history, const FileInfo* fileInfo) {
 	if (!fileInfo->fileName.isEmpty()) {
 		history.addFileInfo(fileInfo->fileNameWithPath, fileInfo->pageInfos.value(fileInfo->currentPageIdx).firstPosition, "");
-		StatusStore::instance().setTextHistory(history);
+		//StatusStore::instance().saveTextHistory(history);
 	}
 }
 
-SavedFileInfo TextViewContainer::loadHistory(HistoryBookmarkProps history, QString filePath) {
+SavedFileInfo TextViewContainer::loadHistory(HistoryProps history, QString filePath) {
 	return history.getFileInfo(filePath);
 }
 
@@ -330,10 +319,12 @@ void TextViewContainer::prevPage(const FileInfo* fileInfo) {
 }
 
 bool TextViewContainer::changeSplitView() {
-	bool newSplit = !m_settings.isSplitView();
-	m_settings.setSplitView(newSplit);
+
+	TextSettingProps setting = StatusStore::instance().getTextSettings();
+	bool newSplit = !setting.isSplitView();
+	setting.setSplitView(newSplit);
 	ui_TextBrowsers[1]->setVisible(newSplit);
-	saveTextSettingProps(m_settings);
+	StatusStore::instance().saveTextSettings(setting);
 	return newSplit;
 }
 
@@ -444,14 +435,16 @@ int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
 
 
 int TextViewContainer::getMaxHeight(QTextBrowser* tb) {
+	TextSettingProps settings = StatusStore::instance().getTextSettings();
 	QFontMetrics fm(tb->font());
-	int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
+	int lineHeight = fm.lineSpacing() * settings.getLineSpacing();
 
-	return ((tb->height() - (m_settings.getPadding().top() + m_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
+	return ((tb->height() - (settings.getPadding().top() + settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
 }
 int TextViewContainer::getMaxWidth(QTextBrowser* tb) {
+	TextSettingProps settings = StatusStore::instance().getTextSettings();
 
-	return ui_TextBrowsers[0]->viewport()->width() - m_settings.getPadding().left() - m_settings.getPadding().right() - 3;
+	return ui_TextBrowsers[0]->viewport()->width() - settings.getPadding().left() - settings.getPadding().right() - 3;
 }
 
 

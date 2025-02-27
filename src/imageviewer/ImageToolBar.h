@@ -6,7 +6,7 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QWidget>
-#include "../StatusStore.h"
+#include "../common/StatusStore.h"
 #include "ImageViewContainer.h"
 
 class ImageToolBar : public QToolBar

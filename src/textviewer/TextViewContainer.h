@@ -3,7 +3,7 @@
 #include <QWidget>
 #include <QTextBrowser>
 #include "TextSettingProps.h"
-#include "../HistoryBookmarkProps.h"
+#include "../common/HistoryProps.h"
 
 class TextViewContainer : public QWidget
 {
@@ -41,8 +41,6 @@ public:
     const FileInfo* getFileInfo();
     void performSearch(QString searchText, const FileInfo* fileInfo);
     void refreshPage(long textPosition);
-	TextSettingProps getTextSettingProps();
-	void saveTextSettingProps(TextSettingProps settings);
     void changeStyle(TextSettingProps s);
 
 
@@ -58,8 +56,8 @@ private:
     void applyLineSpacing(QTextBrowser* tb);
     void nextPage(const FileInfo* fileInfo);
     void prevPage(const FileInfo* fileInfo);
-    void saveHistory(HistoryBookmarkProps history, const FileInfo* fileInfo);
-    SavedFileInfo loadHistory(HistoryBookmarkProps history, QString filePath);
+    void saveHistory(HistoryProps history, const FileInfo* fileInfo);
+    SavedFileInfo loadHistory(HistoryProps history, QString filePath);
     void testText();
 
 protected:

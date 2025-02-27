@@ -92,10 +92,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\common\HistoryCheckBoxItem.cpp" />
     <ClCompile Include="src\common\FileUtils.cpp" />
     <ClCompile Include="src\AboutDialog.cpp" />
-    <ClCompile Include="src\DeleteFilesDialog.cpp" />
-    <ClCompile Include="src\HistoryBookmarkProps.cpp" />
+    <ClCompile Include="src\common\DeleteFilesDialog.cpp" />
+    <ClCompile Include="src\common\HistoryProps.cpp" />
     <ClCompile Include="src\imageviewer\ImageView.cpp" />
     <ClCompile Include="src\imageviewer\ImageViewContainer.cpp" />
     <ClCompile Include="src\imageviewer\ImageSettingProps.cpp" />
@@ -111,25 +112,26 @@
     </ClCompile>
     <ClCompile Include="src\textviewer\TextViewContainer.cpp" />
     <QtMoc Include="src\SzViewer.h" />
-    <ClCompile Include="src\StatusStore.cpp" />
+    <ClCompile Include="src\common\StatusStore.cpp" />
     <ClCompile Include="src\SzViewer.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <QtMoc Include="src\DeleteFilesDialog.h" />
+    <QtMoc Include="src\common\DeleteFilesDialog.h" />
+    <QtMoc Include="src\common\HistoryCheckBoxItem.h" />
     <ClInclude Include="src\common\FileUtils.h" />
-    <ClInclude Include="src\IJsonSerializable.h" />
+    <ClInclude Include="src\common\IJsonSerializable.h" />
     <QtMoc Include="src\textviewer\TextToolbar.h" />
     <QtMoc Include="src\textviewer\TextSearchDialog.h" />
     <QtMoc Include="src\AboutDialog.h" />
     <QtMoc Include="src\imageviewer\ImageViewContainer.h" />
     <QtMoc Include="src\imageviewer\ImageView.h" />
     <QtMoc Include="src\imageviewer\ImageToolBar.h" />
-    <ClInclude Include="src\HistoryBookmarkProps.h" />
+    <ClInclude Include="src\common\HistoryProps.h" />
     <ClInclude Include="src\imageviewer\ImageSettingProps.h" />
     <ClInclude Include="src\textviewer\TextSettingProps.h" />
     <QtMoc Include="src\textviewer\TextSettingDialog.h" />
-    <ClInclude Include="src\StatusStore.h" />
+    <ClInclude Include="src\common\StatusStore.h" />
     <QtMoc Include="src\textviewer\TextViewContainer.h" />
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,7 @@
 ﻿#include "ImageView.h"
 
+#include "../common/StatusStore.h"
+
 ImageView::ImageView(QWidget* parent, ScaleMode scaleMode , int percentage)
     : QScrollArea(parent), m_label(new QLabel(this)), m_scaleMode(scaleMode), m_percentage(percentage)
 {
@@ -26,6 +28,8 @@ void ImageView::clear() {
 
 void ImageView::loadImage(QString& filePath)
 {
+
+    StatusStore::instance().getImageHistory().addFileInfo(filePath, -1, "");
 
     QFileInfo fileInfo(filePath);
     QString suffix = fileInfo.suffix().toLower();

@@ -77,7 +77,7 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
     connect(splitAction, &QAction::triggered, this, [this]() {
         ImageSettingProps setting = StatusStore::instance().getImageSettings();
         setting.setSplitView(m_imageViewContainer->changeSplitView());
-        StatusStore::instance().saveSetting(&setting);
+        StatusStore::instance().saveImageSettings(setting);
         });
 
     QAction* deleteAction = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
