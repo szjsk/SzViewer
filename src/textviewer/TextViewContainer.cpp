@@ -99,9 +99,8 @@ void TextViewContainer::initTextFile(QString& filePath) {
 		qDebug() << "파일을 열 수 없습니다.";
 		return;
 	}
-	qDebug() << " ---- ::: " << filePath;
+
 	this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
-	saveHistory(StatusStore::instance().getTextHistory(), &m_fileInfo);
 	m_fileInfo = TextViewContainer::FileInfo();
 	SavedFileInfo history = StatusStore::instance().getTextHistory().getFileInfo(filePath);
 
@@ -115,7 +114,6 @@ void TextViewContainer::initTextFile(QString& filePath) {
 	m_fileInfo.prevFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, -1);
 	file.close();
 
-	saveHistory(StatusStore::instance().getTextHistory(), &m_fileInfo);
 
 	refreshPage(history.textPosition);
 }
@@ -226,7 +224,6 @@ void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
 
 void TextViewContainer::saveHistory(HistoryProps& history, const FileInfo* fileInfo) {
 	if (!fileInfo->fileName.isEmpty()) {
-		qDebug() << "111 save history : " << fileInfo->fileNameWithPath;
 		history.addFileInfo(fileInfo->fileNameWithPath, fileInfo->pageInfos.value(fileInfo->currentPageIdx).firstPosition, "");
 	}
 }
@@ -351,6 +348,8 @@ void TextViewContainer::setPage(FileInfo* fileInfo, int newPageIdx) {
 			applyLineSpacing(ui_TextBrowsers[i]);
 		}
 	}
+
+	saveHistory(StatusStore::instance().getTextHistory(), fileInfo);
 
 	//testText();
 }
