@@ -22,6 +22,7 @@ StatusStore::~StatusStore()
 	saveSetting(&m_textSettingProps);
 	saveSetting(&m_imageSettingProps);
 	saveTextHistory(m_textHistory);
+	qDebug() << "save text history";
     saveImageHistory(m_imageHistory);
 }
 

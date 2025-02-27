@@ -99,11 +99,11 @@ void TextViewContainer::initTextFile(QString& filePath) {
 		qDebug() << "파일을 열 수 없습니다.";
 		return;
 	}
-
+	qDebug() << " ---- ::: " << filePath;
 	this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
 	saveHistory(StatusStore::instance().getTextHistory(), &m_fileInfo);
 	m_fileInfo = TextViewContainer::FileInfo();
-	SavedFileInfo history = loadHistory(StatusStore::instance().getTextHistory(), filePath);
+	SavedFileInfo history = StatusStore::instance().getTextHistory().getFileInfo(filePath);
 
 	QTextStream in(&file);
 	m_fileInfo.text = in.readAll();
@@ -114,6 +114,8 @@ void TextViewContainer::initTextFile(QString& filePath) {
 	m_fileInfo.nextFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, 1);
 	m_fileInfo.prevFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, -1);
 	file.close();
+
+	saveHistory(StatusStore::instance().getTextHistory(), &m_fileInfo);
 
 	refreshPage(history.textPosition);
 }
@@ -222,16 +224,13 @@ void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
 	Setting History
 */
 
-void TextViewContainer::saveHistory(HistoryProps history, const FileInfo* fileInfo) {
+void TextViewContainer::saveHistory(HistoryProps& history, const FileInfo* fileInfo) {
 	if (!fileInfo->fileName.isEmpty()) {
+		qDebug() << "111 save history : " << fileInfo->fileNameWithPath;
 		history.addFileInfo(fileInfo->fileNameWithPath, fileInfo->pageInfos.value(fileInfo->currentPageIdx).firstPosition, "");
-		//StatusStore::instance().saveTextHistory(history);
 	}
 }
 
-SavedFileInfo TextViewContainer::loadHistory(HistoryProps history, QString filePath) {
-	return history.getFileInfo(filePath);
-}
 
 /*
 	page, file event

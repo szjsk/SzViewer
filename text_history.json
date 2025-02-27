@@ -1,9 +1,16 @@
 {
     "fileInfos": [
         {
-            "fileName": "C:/Users/szpc/Documents/남편이 마탑주였다.txt",
+            "fileName": "C:/Users/szpc/Documents/그녀를 다시 잃지 않으려면.txt",
             "isBookmarked": false,
-            "savedDateTime": 0,
+            "savedDateTime": 1740690143009,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "C:/Users/szpc/Documents/로잘린 보가트.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740690602047,
             "textLine": "",
             "textPosition": 0
         },
@@ -15,9 +22,30 @@
             "textPosition": 0
         },
         {
+            "fileName": "C:/Users/szpc/Documents/마지막 여행이 끝나면.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740690602219,
+            "textLine": "",
+            "textPosition": -1
+        },
+        {
+            "fileName": "C:/Users/szpc/Documents/남편이 마탑주였다.txt",
+            "isBookmarked": false,
+            "savedDateTime": 0,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
             "fileName": "C:/Users/szpc/Documents/운수_좋은_날/현진건-운수_좋은_날+B3356-개벽.txt",
             "isBookmarked": true,
             "savedDateTime": 0,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "C:/Users/szpc/Documents/그림자 없는 밤.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740690154906,
             "textLine": "",
             "textPosition": 0
         },

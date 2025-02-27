@@ -56,7 +56,7 @@ private:
     void applyLineSpacing(QTextBrowser* tb);
     void nextPage(const FileInfo* fileInfo);
     void prevPage(const FileInfo* fileInfo);
-    void saveHistory(HistoryProps history, const FileInfo* fileInfo);
+    void saveHistory(HistoryProps& history, const FileInfo* fileInfo);
     SavedFileInfo loadHistory(HistoryProps history, QString filePath);
     void testText();
 
