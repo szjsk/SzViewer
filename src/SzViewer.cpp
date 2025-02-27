@@ -11,7 +11,7 @@ SzViewer::SzViewer(QWidget *parent)
 
     m_stackedWidget = new QStackedWidget(this);
 
-    m_textViewContainer = new TextViewContainer(this, StatusStore::instance().getTextSettings());
+    m_textViewContainer = new TextViewContainer(this);
     m_stackedWidget->addWidget(m_textViewContainer);
     connect(m_textViewContainer, &TextViewContainer::deleteKeyPressed, this, &SzViewer::handleDeleteKey);
 
@@ -147,7 +147,7 @@ void SzViewer::resizeEvent(QResizeEvent* event) {
         //todo
     }
     else if (m_textViewContainer->isVisible()) {
-        m_textViewContainer->refreshPage();
+        m_textViewContainer->refreshPage(m_textViewContainer->getFileInfo()->currentPosition);
     }
 }
 
@@ -222,6 +222,6 @@ void SzViewer::openFile(QString& fileName) {
     }
     else if(suffix == "txt" || suffix == "ini") {
         changeVisible(false);
-        m_textViewContainer->loadText(fileName);
+        m_textViewContainer->initTextFile(fileName);
     }
 }

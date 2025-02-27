@@ -1,4 +1,4 @@
-#include "DeleteFilesDialog.h"
+ï»¿#include "DeleteFilesDialog.h"
 
 DeleteFilesDialog::DeleteFilesDialog(const QStringList& files, bool isFolder, QWidget* parent)
     : QDialog(parent), m_fileListWidget(new QListWidget(this)), m_deleteFolderCheckBox(new QCheckBox("delete folder with all file", this)),
@@ -6,14 +6,14 @@ DeleteFilesDialog::DeleteFilesDialog(const QStringList& files, bool isFolder, QW
 {
     setWindowTitle("Delete File");
 
-    // ÆÄÀÏ ¸ñ·ÏÀ» QListWidget¿¡ Ãß°¡ÇÏ°í °¢ Ç×¸ñ¿¡ Ã¼Å©¹Ú½º¸¦ ¼³Á¤
+    // íŒŒì¼ ëª©ë¡ì„ QListWidgetì— ì¶”ê°€í•˜ê³  ê° í•­ëª©ì— ì²´í¬ë°•ìŠ¤ë¥¼ ì„¤ì •
     for (const QString& file : files) {
         QListWidgetItem* item = new QListWidgetItem(file, m_fileListWidget);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
         item->setCheckState(Qt::Checked);
     }
 
-    // ·¹ÀÌ¾Æ¿ô ¼³Á¤
+    // ë ˆì´ì•„ì›ƒ ì„¤ì •
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
     mainLayout->addWidget(m_fileListWidget);
     mainLayout->addWidget(m_deleteFolderCheckBox);
@@ -26,7 +26,7 @@ DeleteFilesDialog::DeleteFilesDialog(const QStringList& files, bool isFolder, QW
 
     mainLayout->addLayout(buttonLayout);
 
-    // ¹öÆ° ½Ã±×³Î ¿¬°á
+    // ë²„íŠ¼ ì‹œê·¸ë„ ì—°ê²°
     connect(m_okButton, &QPushButton::clicked, this, &DeleteFilesDialog::deleteFileOrFolder);
     connect(m_cancelButton, &QPushButton::clicked, this, &QDialog::reject);
 }
@@ -65,7 +65,7 @@ void DeleteFilesDialog::deleteFileOrFolder() {
 
 void DeleteFilesDialog::moveToTrash(const QString& filePath) {
 #ifdef Q_OS_WIN
-    // Windows¿¡¼­ ÆÄÀÏÀ» ÈŞÁöÅëÀ¸·Î ÀÌµ¿
+    // Windowsì—ì„œ íŒŒì¼ì„ íœ´ì§€í†µìœ¼ë¡œ ì´ë™
     QString nativeFilePath = QDir::toNativeSeparators(filePath);
     wchar_t* file = new wchar_t[nativeFilePath.length() + 2];
     nativeFilePath.toWCharArray(file);
@@ -82,12 +82,12 @@ void DeleteFilesDialog::moveToTrash(const QString& filePath) {
 
     delete[] file;
 #elif defined(Q_OS_MAC)
-    // macOS¿¡¼­ ÆÄÀÏÀ» ÈŞÁöÅëÀ¸·Î ÀÌµ¿
+    // macOSì—ì„œ íŒŒì¼ì„ íœ´ì§€í†µìœ¼ë¡œ ì´ë™
     NSString* nsFilePath = [NSString stringWithUTF8String : filePath.toUtf8().constData()];
     NSURL* fileURL = [NSURL fileURLWithPath : nsFilePath];
     [[NSFileManager defaultManager]trashItemAtURL:fileURL resultingItemURL : nil error : nil];
 #else
-    // ±âÅ¸ ÇÃ·§Æû¿¡¼­´Â ÆÄÀÏÀ» »èÁ¦
+    // ê¸°íƒ€ í”Œë«í¼ì—ì„œëŠ” íŒŒì¼ì„ ì‚­ì œ
     QFile::remove(filePath);
 #endif
 }
@@ -96,7 +96,7 @@ void DeleteFilesDialog::moveFolderToTrash(const QString& folderPath) {
     QDir dir(folderPath);
     QFileInfoList fileList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
 
-    // Æú´õ ³»ÀÇ ¸ğµç ÆÄÀÏ°ú Æú´õ¸¦ ÈŞÁöÅëÀ¸·Î ÀÌµ¿
+    // í´ë” ë‚´ì˜ ëª¨ë“  íŒŒì¼ê³¼ í´ë”ë¥¼ íœ´ì§€í†µìœ¼ë¡œ ì´ë™
     for (const QFileInfo& fileInfo : fileList) {
         if (fileInfo.isDir()) {
             moveFolderToTrash(fileInfo.absoluteFilePath());
@@ -106,6 +106,6 @@ void DeleteFilesDialog::moveFolderToTrash(const QString& folderPath) {
         }
     }
 
-    // Æú´õ ÀÚÃ¼¸¦ ÈŞÁöÅëÀ¸·Î ÀÌµ¿
+    // í´ë” ìì²´ë¥¼ íœ´ì§€í†µìœ¼ë¡œ ì´ë™
     moveToTrash(folderPath);
 }

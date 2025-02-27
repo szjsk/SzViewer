@@ -1,68 +1,73 @@
 #ifndef TEXTVIEWCONTAINER_H
 #define TEXTVIEWCONTAINER_H
-
 #include <QWidget>
 #include <QTextBrowser>
-#include <QHBoxLayout>
-#include <QFile>
-#include <QTextCursor>
-#include <QTextDocument>
-#include <QSizeF>
-#include <QAbstractTextDocumentLayout>
-#include <QTimer>
-#include <QSlider>
-#include <QLabel>
 #include "TextSettingProps.h"
-#include <QFileInfo>
-#include <QDir>
-#include <QCollator>
+#include "../HistoryBookmarkProps.h"
 
 class TextViewContainer : public QWidget
 {
     Q_OBJECT
 
 public:
-    TextViewContainer(QWidget* parent = nullptr, const TextSettingProps& settings = TextSettingProps());
-    void loadText(QString& filePath);
+
+    struct PageInfo {
+        long firstPosition = -1;
+        QVector<QString> lines;
+    };
+
+    struct FileInfo {
+		QString fileName;
+        QString fileNameWithPath;
+        int currentPageIdx;
+        long currentPosition;
+        QStringList fileList;
+		QString nextFile;
+		QString prevFile;
+        QString text;
+        QHash<long, PageInfo> pageInfos;
+    };
+
+    TextViewContainer(QWidget* parent = nullptr);
+    ~TextViewContainer();
+    void initTextFile(QString& filePath);
     bool changeSplitView();
-    void refreshPage();
-    void nextPage();
-    void prevPage();
-    void setSettings(const TextSettingProps& s);
-    QHash<long, QVector<QString>>* getTextChunks();
+
+
     void findPage(const QString&, long page, long line);
-	void deleteFile();
+	void deleteFile(const FileInfo* fileInfo);
 	void clear();
+    int findTextPageBy(const FileInfo* fileInfo, long position);
+    const FileInfo* getFileInfo();
+    void performSearch(QString searchText, const FileInfo* fileInfo);
+    void refreshPage(long textPosition);
+	TextSettingProps getTextSettingProps();
+	void saveTextSettingProps(TextSettingProps settings);
+    void changeStyle(TextSettingProps s);
+
 
 private:
-    static constexpr int M_TEXT_BROWSER_CNT = 2;
-    TextSettingProps m_settings;
-    QString m_text;
-    QString m_fileName;
-    long m_currentPosition;
-    QTextBrowser* m_textBrowserArray[M_TEXT_BROWSER_CNT];
-    QLabel* m_qSliderInfo;
-    QHash<QChar, int> m_charWidthCache;
-    QHash<long, QVector<QString>> m_textChunks;  
-    QTimer* m_resizeTimer;
-    QSlider* m_qSlider;
+    QHash<long, PageInfo> calculatePage(const FileInfo* fileInfo, int maxLine, int maxWidth, QTextBrowser* browser);
+    QTextBrowser* createTextBrowser(TextSettingProps settings); //텍스트뷰 생성
+    int getMaxHeight(QTextBrowser* tb);
+    int getMaxWidth(QTextBrowser* tb);
 
-    QTextBrowser* createTextBrowser(); //텍스트뷰 생성
-    int getLineHeight(QTextBrowser* tb);
     int getFontWidth(QFontMetrics* tb, QChar c);
-    void resizeEvent(QResizeEvent* event);
-    void setPage(long position);
-    void refreshFont(QTextBrowser* tb);
-    void refreshStyle(QTextBrowser* tb);
+    void setPage(FileInfo* fileInfo, int newPageIdx);
+    void refreshStyle(TextSettingProps settings, QTextBrowser* tb);
     void applyLineSpacing(QTextBrowser* tb);
-    QString getNextOrPrevFileName(int nextOrPrev);
+    void nextPage(const FileInfo* fileInfo);
+    void prevPage(const FileInfo* fileInfo);
+    void saveHistory(HistoryBookmarkProps history, const FileInfo* fileInfo);
+    SavedFileInfo loadHistory(HistoryBookmarkProps history, QString filePath);
+    void testText();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
     void deleteKeyPressed(QStringList files, QString nextFile);
-
+	void searchResultReady(QString searchText, long page, int line);
 };
 
 #endif // TEXTVIEWCONTAINER_H

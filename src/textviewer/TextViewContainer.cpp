@@ -1,360 +1,479 @@
 #include "TextViewContainer.h"
+#include "../StatusStore.h"
+#include "../common/FileUtils.h"
 
-TextViewContainer::TextViewContainer(QWidget* parent, const TextSettingProps& settings)
-	: QWidget(parent), m_settings(settings)
+#include "../StatusStore.h"
+
+#include <QHBoxLayout>
+#include <QFile>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QSizeF>
+#include <QAbstractTextDocumentLayout>
+#include <QTimer>
+#include <QSlider>
+#include <QLabel>
+
+#include <QFileInfo>
+#include <QDir>
+#include <QCollator>
+#include <QHash>
+
+QHash<QChar, int> m_charWidthCache;
+static constexpr int M_TEXT_BROWSER_CNT = 2;
+QTextBrowser* ui_TextBrowsers[M_TEXT_BROWSER_CNT];
+QLabel* ui_QSliderInfo;
+QSlider* ui_QSlider;
+
+HistoryBookmarkProps m_history = StatusStore::instance().getTextHistory();
+TextSettingProps m_settings = StatusStore::instance().getTextSettings();;
+TextViewContainer::FileInfo m_fileInfo;
+
+TextViewContainer::TextViewContainer(QWidget* parent)
+	: QWidget(parent)
 {
- 
-    //main
-    QVBoxLayout* vBoxContainer = new QVBoxLayout(this);
+	//main
+	QVBoxLayout* vBoxContainer = new QVBoxLayout(this);
 
-    //for textBrowser
-    QHBoxLayout* hBoxBrowser = new QHBoxLayout();
-    m_textBrowserArray[0] = createTextBrowser();
-    m_textBrowserArray[1] = createTextBrowser();
+	//for textBrowser
+	QHBoxLayout* hBoxBrowser = new QHBoxLayout();
+	ui_TextBrowsers[0] = createTextBrowser(m_settings);
+	ui_TextBrowsers[1] = createTextBrowser(m_settings);
+	ui_TextBrowsers[0]->installEventFilter(this);
 
-    hBoxBrowser->addWidget(m_textBrowserArray[0]);
-    hBoxBrowser->addWidget(m_textBrowserArray[1]);
+	hBoxBrowser->addWidget(ui_TextBrowsers[0]);
+	hBoxBrowser->addWidget(ui_TextBrowsers[1]);
 
-    m_textBrowserArray[1]->setVisible(m_settings.isSplitView());
+	ui_TextBrowsers[1]->setVisible(m_settings.isSplitView());
 
-    vBoxContainer->addLayout(hBoxBrowser, 1);
+	vBoxContainer->addLayout(hBoxBrowser, 1);
 
 	//for slider
-    QHBoxLayout* hBoxSlider = new QHBoxLayout();
-    m_qSlider = new QSlider(Qt::Horizontal, this);
-    hBoxSlider->addWidget(m_qSlider);
+	QHBoxLayout* hBoxSlider = new QHBoxLayout();
+	ui_QSlider = new QSlider(Qt::Horizontal, this);
+	hBoxSlider->addWidget(ui_QSlider);
 
-    m_qSliderInfo = new QLabel(this);
-    hBoxSlider->addWidget(m_qSliderInfo);
+	ui_QSliderInfo = new QLabel(this);
+	hBoxSlider->addWidget(ui_QSliderInfo);
 
-    vBoxContainer->addLayout(hBoxSlider);
+	vBoxContainer->addLayout(hBoxSlider);
 
-    setLayout(vBoxContainer);
+	setLayout(vBoxContainer);
 
-    // 슬라이더 값 변경 시 정보를 업데이트하는 람다 슬롯 연결
-    connect(m_qSlider, &QSlider::valueChanged, this, [this](int value) {
-        m_currentPosition = value - 1;
-        setPage(m_currentPosition);
-        m_qSliderInfo->setText(QString("page: %1 / %2").arg(value).arg(m_qSlider->maximum()));
-        });
+	// 슬라이더 값 변경 시 정보를 업데이트하는 람다 슬롯 연결
+	connect(ui_QSlider, &QSlider::valueChanged, this, [this](int value) {
+		setPage(&m_fileInfo, value);
+		ui_QSliderInfo->setText(QString("page: %1 / %2").arg(value).arg(ui_QSlider->maximum()));
+		});
 
+}
+
+TextViewContainer::~TextViewContainer() {
+	//save
+	saveHistory(m_history, &m_fileInfo);
 }
 
 void TextViewContainer::clear() {
-	m_textBrowserArray[0]->clear();
-	m_textBrowserArray[1]->clear();
-	m_textChunks.clear();
-	m_text.clear();
-	m_fileName.clear();
-	m_currentPosition = 0;
-	m_qSlider->setValue(0);
-	m_qSlider->setMaximum(0);
-	m_qSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
+	ui_TextBrowsers[0]->clear();
+	ui_TextBrowsers[1]->clear();
+	m_fileInfo = TextViewContainer::FileInfo();
+	ui_QSlider->setValue(0);
+	ui_QSlider->setMaximum(0);
+	ui_QSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
 }
 
-QTextBrowser* TextViewContainer::createTextBrowser() {
 
-    QTextBrowser* tb = new QTextBrowser(this);
-	refreshFont(tb);
-	refreshStyle(tb);
+QTextBrowser* TextViewContainer::createTextBrowser(TextSettingProps settings) {
 
-    tb->installEventFilter(this);
-    tb->setTextInteractionFlags(Qt::NoTextInteraction);  // 텍스트 상호작용 비활성화
-    tb->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  // 세로 스크롤바 비활성화
+	QTextBrowser* tb = new QTextBrowser(this);
+	refreshStyle(settings, tb);
 
+	tb->installEventFilter(this);
+	tb->setTextInteractionFlags(Qt::NoTextInteraction);  // 텍스트 상호작용 비활성화
+	tb->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);  // 세로 스크롤바 비활성화
 
-    return tb;
+	return tb;
 }
 
-void TextViewContainer::loadText(QString& filePath) {
-    QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "파일을 열 수 없습니다.";
-        return;
-    }
+void TextViewContainer::initTextFile(QString& filePath) {
+	QFile file(filePath);
+	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+		qDebug() << "파일을 열 수 없습니다.";
+		return;
+	}
 
-    this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
+	//    this->window()->setWindowTitle(QString("SzViewer - %1").arg(file.fileName()));
+	saveHistory(m_history, &m_fileInfo);
+	m_fileInfo = TextViewContainer::FileInfo();
+	SavedFileInfo history = loadHistory(m_history, filePath);
 
-    m_fileName = filePath;
+	QTextStream in(&file);
+	m_fileInfo.text = in.readAll();
+	m_fileInfo.fileName = QFileInfo(filePath).fileName();
+	m_fileInfo.fileNameWithPath = filePath;
+	m_fileInfo.currentPageIdx = 0;
+	m_fileInfo.fileList = FileUtils::getFileList(filePath);
+	m_fileInfo.nextFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, 1);
+	m_fileInfo.prevFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, -1);
+	file.close();
 
-    QTextStream in(&file);
-    m_text = in.readAll();    
-    file.close();
+	refreshPage(history.textPosition);
+}
 
-    //init
-    m_currentPosition = 0;
-    m_qSlider->setValue(0);
-    m_qSliderInfo->setText(QString("page: %1 / %2").arg(0).arg(0));
+void TextViewContainer::refreshPage(long textPosition) {
 
-    refreshPage();
-    this->window()->activateWindow();
-    this->window()->raise();
-    m_textBrowserArray[0]->installEventFilter(this);
+	m_fileInfo.pageInfos = calculatePage(&m_fileInfo, getMaxHeight(ui_TextBrowsers[0]), getMaxWidth(ui_TextBrowsers[0]), ui_TextBrowsers[0]);
+
+	int currentPage = findTextPageBy(&m_fileInfo, textPosition);
+	if (ui_TextBrowsers[1]->isVisible()) {
+		currentPage = currentPage - (currentPage % M_TEXT_BROWSER_CNT);
+	}
+	m_fileInfo.currentPageIdx = currentPage;
+	ui_QSlider->setRange(0, m_fileInfo.pageInfos.size() - 1);
+
+	if (currentPage == 0) {
+		setPage(&m_fileInfo, currentPage);
+		ui_QSliderInfo->setText(QString("page: %1 / %2").arg(currentPage).arg(ui_QSlider->maximum()));
+	}
+	else {
+		ui_QSlider->setValue(currentPage);
+	}
+
+	this->window()->activateWindow();
+	this->window()->raise();
+}
+
+int TextViewContainer::findTextPageBy(const FileInfo* fileInfo, long position) {
+	if (position <= 0) {
+		return 0;
+	}
+
+	for (int i = 0;i < fileInfo->pageInfos.size();i++) {
+		if (fileInfo->pageInfos.value(i).firstPosition >= position) {
+			return i;
+		}
+	}
 }
 
 void TextViewContainer::findPage(const QString& text, long page, long line) {
-    int browserIndex = 0;
-    if (m_textBrowserArray[1]->isVisible()) {
+	int browserIndex = 0;
+	if (ui_TextBrowsers[1]->isVisible()) {
 		browserIndex = (page % 2);
-    }
-    m_currentPosition = page - browserIndex;
+	}
 
-    setPage(m_currentPosition);
-    m_qSlider->setValue(m_currentPosition + 1);
+	ui_QSlider->setValue(page - browserIndex);
 
-    QTextCursor cursor(m_textBrowserArray[browserIndex]->document());
-    cursor = m_textBrowserArray[browserIndex]->document()->find(text, cursor);
-    if (!cursor.isNull()) {
-        m_textBrowserArray[browserIndex]->setTextCursor(cursor);
-    }
+	QTextCursor cursor(ui_TextBrowsers[browserIndex]->document());
+	cursor = ui_TextBrowsers[browserIndex]->document()->find(text, cursor);
+	if (!cursor.isNull()) {
+		ui_TextBrowsers[browserIndex]->setTextCursor(cursor);
+	}
 
 }
 
-void TextViewContainer::setPage(long position) {
+/*
+	Style Setting
+*/
 
-    for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
+void TextViewContainer::changeStyle(TextSettingProps s) {
 
-        if (m_textBrowserArray[i]->isVisible()) {
-            QVector<QString> lines = m_textChunks.value(position + i);
-
-            m_textBrowserArray[i]->clear();
-            m_textBrowserArray[i]->setPlainText(lines.join(""));
-            m_textBrowserArray[i]->moveCursor(QTextCursor::Start);
-
-            applyLineSpacing(m_textBrowserArray[i]);
-
-        }
-    }
+	refreshStyle(s, ui_TextBrowsers[0]);
+	refreshStyle(s, ui_TextBrowsers[1]);
 
 }
 
-void TextViewContainer::nextPage() {
+void TextViewContainer::refreshStyle(TextSettingProps settings, QTextBrowser* tb) {
+	QFont f = settings.getFont();
+	f.setHintingPreference(QFont::PreferFullHinting);
+	f.setStyleStrategy(QFont::PreferAntialias);
+	tb->setFont(f);
+	
+	QFontMetrics fm(settings.getFont());
+	int lineHeight = fm.lineSpacing();
 
-    for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
-        if (m_textBrowserArray[i]->isVisible() && m_currentPosition + 1 < m_textChunks.size()) {
-            m_currentPosition++;
-        }
-    }
+	QString style = QString("QTextBrowser { "
+		"background-color: %1; "
+		"padding: %2px %3px %4px %5px; "
+		"color: %6; }")
+		.arg(settings.getBackgroundColor().name())
+		.arg(settings.getPadding().top())
+		.arg(settings.getPadding().right())
+		.arg(settings.getPadding().bottom())
+		.arg(settings.getPadding().left())
+		.arg(settings.getTextColor().name())
+		;
 
-    setPage(m_currentPosition);
-    m_qSlider->setValue(m_currentPosition + 1);
-
-}
-
-void TextViewContainer::prevPage() {
-    
-    for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
-        if (m_textBrowserArray[i]->isVisible() && m_currentPosition - i > -1) {
-            m_currentPosition--;
-        }
-    }
-
-    if (m_currentPosition < 0) {
-        m_currentPosition = 0;
-    }
-
-    setPage(m_currentPosition);
-    m_qSlider->setValue(m_currentPosition + 1);
-
-}
-
-void TextViewContainer::refreshFont(QTextBrowser* tb) {
-	QFont f = m_settings.getFont();
-    f.setHintingPreference(QFont::PreferFullHinting);
-    f.setStyleStrategy(QFont::PreferAntialias);
-    tb->setFont(f);
-}
-
-void TextViewContainer::refreshStyle(QTextBrowser* tb) {
-    QFontMetrics fm(m_settings.getFont());
-    int lineHeight = fm.lineSpacing();
-
-    QString style = QString("QTextBrowser { "
-        "background-color: %1; "
-        "padding: %2px %3px %4px %5px; "
-        "color: %6; }")
-        .arg(m_settings.getBackgroundColor().name())
-        .arg(m_settings.getPadding().top())
-        .arg(m_settings.getPadding().right())
-        .arg(m_settings.getPadding().bottom())
-        .arg(m_settings.getPadding().left())
-        .arg(m_settings.getTextColor().name())
-        ;
-
-    tb->setStyleSheet(style);
+	tb->setStyleSheet(style);
 	applyLineSpacing(tb);
 
 }
 
 void TextViewContainer::applyLineSpacing(QTextBrowser* tb) {
-    QFontMetrics fm(tb->font());
-    int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
+	QFontMetrics fm(tb->font());
+	int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
 
-    QTextCursor cursor(tb->document());
-    cursor.select(QTextCursor::Document);
-    QTextBlockFormat blockFormat = cursor.blockFormat();
-    // FixedHeight의 경우 픽셀 단위로 간격을 지정합니다.
-    blockFormat.setLineHeight(lineHeight, QTextBlockFormat::FixedHeight);
-    cursor.setBlockFormat(blockFormat);
+	QTextCursor cursor(tb->document());
+	cursor.select(QTextCursor::Document);
+	QTextBlockFormat blockFormat = cursor.blockFormat();
+	// FixedHeight의 경우 픽셀 단위로 간격을 지정합니다.
+	blockFormat.setLineHeight(lineHeight, QTextBlockFormat::FixedHeight);
+	cursor.setBlockFormat(blockFormat);
 }
 
-void TextViewContainer::refreshPage() {
-	m_textChunks.clear();
-
-    int maxLine = getLineHeight(m_textBrowserArray[0]);
-    int maxWidth = m_textBrowserArray[0]->viewport()->width() - (m_settings.getPadding().left() + m_settings.getPadding().right());
-    
-    QString line;
-    int width = 0;
-    QFontMetrics fm(m_textBrowserArray[0]->font());
-    int page = 0;
-    QVector<QString> lines;
-
-    for (long i = 0; i < m_text.length(); i++) {
-		QChar c = m_text.at(i);
-		line.append(c);
-        width += getFontWidth(&fm, c);
-        if (c == '\n' || width >= maxWidth) {
-            lines.append(line);
-			line.clear();
-			width = 0;
-
-			if (lines.size() >= maxLine ) {
-				m_textChunks.insert( page++, lines);
-				lines.clear();
-			}
-        }
-    }
-
-    if (!line.isEmpty()) {
-        lines.append(line);
-    }
-
-    m_textChunks.insert(page++, lines);
-
-	m_qSlider->setRange(1, m_textChunks.size());
-    m_qSlider->setValue(m_currentPosition + 1);
-    m_qSliderInfo->setText(QString("page: %1 / %2").arg(m_currentPosition+1).arg(m_qSlider->maximum()));
-
-	setPage(m_currentPosition);
+TextSettingProps TextViewContainer::getTextSettingProps() {
+	return m_settings;
 }
 
-bool TextViewContainer::changeSplitView() {
-    bool newSplit = !m_settings.isSplitView();
-    m_settings.setSplitView(newSplit);
-    m_textBrowserArray[1]->setVisible(newSplit);
-    refreshPage();
-    return newSplit;
+void TextViewContainer::saveTextSettingProps(TextSettingProps settings) {
+	StatusStore::instance().setTextSettings(settings);
+	m_settings = settings;
 }
 
-void TextViewContainer::setSettings(const TextSettingProps& s) {
-    m_settings = s;
-    refreshFont(m_textBrowserArray[0]);
-    refreshFont(m_textBrowserArray[1]);
-    refreshStyle(m_textBrowserArray[0]);
-    refreshStyle(m_textBrowserArray[1]);
+/*
+	Setting History
+*/
+
+void TextViewContainer::saveHistory(HistoryBookmarkProps history, const FileInfo* fileInfo) {
+	if (!fileInfo->fileName.isEmpty()) {
+		history.addFileInfo(fileInfo->fileNameWithPath, fileInfo->pageInfos.value(fileInfo->currentPageIdx).firstPosition, "");
+		StatusStore::instance().setTextHistory(history);
+	}
 }
 
-
-int TextViewContainer::getLineHeight(QTextBrowser* tb) {
-    QFontMetrics fm(tb->font());
-    int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
-
-    return ((tb->height() - (m_settings.getPadding().top()+ m_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
+SavedFileInfo TextViewContainer::loadHistory(HistoryBookmarkProps history, QString filePath) {
+	return history.getFileInfo(filePath);
 }
 
-int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
-    if (!m_charWidthCache.contains(c)) {
-        int width = fm->horizontalAdvance(c); // 글자의 너비
-//        width += fm->leftBearing(c); // 왼쪽 여백
-        width += fm->rightBearing(c); // 오른쪽 여백
-
-        // 탭 간격을 고려
-        if (c == '\t') {
-            width = fm->horizontalAdvance(' ') * 4; // 예: 탭 간격을 4개의 공백으로 설정
-        }
-
-        m_charWidthCache.insert(c,width);  // 캐시에 값 저장
-    }
-    return m_charWidthCache.value(c);
-}
+/*
+	page, file event
+*/
 
 bool TextViewContainer::eventFilter(QObject* watched, QEvent* event) {
 
 	if (this->isVisible() == false) {
-	    return QWidget::eventFilter(watched, event);
+		return QWidget::eventFilter(watched, event);
 	}
 
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_PageDown) {
-            QString next = getNextOrPrevFileName(1);
-            if (!next.isEmpty()) {
-                loadText(next);
-            }
-        }else if (keyEvent->key() == Qt::Key_PageUp) {
-            QString prev = getNextOrPrevFileName(-1);
-            if (!prev.isEmpty()) {
-                loadText(prev);
-            }
-        }else if (keyEvent->key() == Qt::Key_Left) {
-            prevPage();
-        }else if (keyEvent->key() == Qt::Key_Right) {
-            nextPage();
-        }else if (keyEvent->key() == Qt::Key_Delete && !m_fileName.isEmpty()) {
-            deleteFile();
-        }
-        return false;  // 이벤트를 가로채서 처리 완료
-    }
+	if (event->type() == QEvent::KeyPress) {
+		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+		if (keyEvent->key() == Qt::Key_PageDown && !m_fileInfo.nextFile.isEmpty()) {
+			initTextFile(m_fileInfo.nextFile);
+		}
+		else if (keyEvent->key() == Qt::Key_PageUp && !m_fileInfo.prevFile.isEmpty()) {
+			initTextFile(m_fileInfo.prevFile);
+		}
+		else if (keyEvent->key() == Qt::Key_Left) {
+			prevPage(&m_fileInfo);
+		}
+		else if (keyEvent->key() == Qt::Key_Right) {
+			nextPage(&m_fileInfo);
+		}
+		else if (keyEvent->key() == Qt::Key_Delete && !m_fileInfo.fileNameWithPath.isEmpty()) {
+			deleteFile(&m_fileInfo);
+		}
+		return false;  // 이벤트를 가로채서 처리 완료
+	}
 
 
-    if (event->type() == QEvent::MouseButtonRelease) {
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        QPoint mousePos = static_cast<QWidget*>(watched)->mapTo(this, mouseEvent->pos());
+	if (event->type() == QEvent::MouseButtonRelease) {
+		QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+		QPoint mousePos = static_cast<QWidget*>(watched)->mapTo(this, mouseEvent->pos());
 
-        int centerX = this->width() / 2;
+		int centerX = this->width() / 2;
 
-        if (mousePos.x() < centerX) {
-            prevPage();
-        }
-        else {
-            nextPage();
-        }
-    }
+		if (mousePos.x() < centerX) {
+			prevPage(&m_fileInfo);
+		}
+		else {
+			nextPage(&m_fileInfo);
+		}
+	}
 
-    return QWidget::eventFilter(watched, event);
+	return QWidget::eventFilter(watched, event);
 }
 
-void TextViewContainer::deleteFile() {
-    QStringList files;
-    files.append(m_fileName);
-    
-    emit deleteKeyPressed(files, getNextOrPrevFileName(1));
+void TextViewContainer::deleteFile(const FileInfo* fileInfo) {
+	QStringList files;
+	files.append(fileInfo->fileNameWithPath);
+
+	emit deleteKeyPressed(files, fileInfo->nextFile.isEmpty() ? fileInfo->prevFile : fileInfo->nextFile);
 }
 
-QString TextViewContainer::getNextOrPrevFileName(int nextOrPrev) {
-    QFileInfo fileInfo(m_fileName);
-    QDir dir = fileInfo.dir();
-    QStringList fileList = dir.entryList(QDir::Files, QDir::Name);
-    QCollator collator;
-    collator.setNumericMode(true);
-    std::sort(fileList.begin(), fileList.end(),
-        [&collator](const QString& s1, const QString& s2) {
-            return collator.compare(s1, s2) < 0;
-        });
-    int currentIndex = fileList.indexOf(fileInfo.fileName());
-    int idx = currentIndex + nextOrPrev;
-    if (currentIndex != -1 && idx < fileList.size() && idx > -1) {
-        return dir.absoluteFilePath(fileList.at(idx));
-    }
+void TextViewContainer::nextPage(const FileInfo* fileInfo) {
+	int nextPosition = fileInfo->currentPageIdx;
 
-    return QString();
+	for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
+		if (ui_TextBrowsers[i]->isVisible() && nextPosition + 1 < fileInfo->pageInfos.size()) {
+			nextPosition++;
+		}
+	}
+
+	ui_QSlider->setValue(nextPosition);
+
 }
 
-void TextViewContainer::resizeEvent(QResizeEvent* event) {
-    QWidget::resizeEvent(event);
+void TextViewContainer::prevPage(const FileInfo* fileInfo) {
+	int prevPosition = fileInfo->currentPageIdx;
+
+	for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
+		if (ui_TextBrowsers[i]->isVisible() && prevPosition - i > -1) {
+			prevPosition--;
+		}
+	}
+
+	if (prevPosition < 0) {
+		prevPosition = 0;
+	}
+
+	ui_QSlider->setValue(prevPosition);
+
 }
 
-QHash<long, QVector<QString>>* TextViewContainer::getTextChunks() {
-	return &m_textChunks;
+bool TextViewContainer::changeSplitView() {
+	bool newSplit = !m_settings.isSplitView();
+	m_settings.setSplitView(newSplit);
+	ui_TextBrowsers[1]->setVisible(newSplit);
+	saveTextSettingProps(m_settings);
+	return newSplit;
+}
+
+/*
+	page calculation logic
+*/
+
+void TextViewContainer::setPage(FileInfo* fileInfo, int newPageIdx) {
+	if (newPageIdx < 0 || newPageIdx >= fileInfo->pageInfos.size()) {
+		return;
+	}
+
+	fileInfo->currentPageIdx = newPageIdx;
+	fileInfo->currentPosition = fileInfo->pageInfos.value(newPageIdx).firstPosition;
+
+	for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
+		if (ui_TextBrowsers[i]->isVisible()) {
+
+			QVector<QString> lines = fileInfo->pageInfos.value(newPageIdx + i).lines;
+
+			ui_TextBrowsers[i]->clear();
+			ui_TextBrowsers[i]->setPlainText(lines.join(""));
+			ui_TextBrowsers[i]->moveCursor(QTextCursor::Start);
+
+			applyLineSpacing(ui_TextBrowsers[i]);
+		}
+	}
+
+	//testText();
+}
+
+QHash<long, TextViewContainer::PageInfo> TextViewContainer::calculatePage(const FileInfo* fileInfo, int maxLine, int maxWidth, QTextBrowser* browser) {
+	QHash<long, PageInfo> textPages;
+	QString line;
+	int width = 0;
+	QFontMetrics fm(browser->font());
+	int pageCnt = 0;
+	TextViewContainer::PageInfo page;
+
+	for (long i = 0; i < fileInfo->text.length(); i++) {
+
+		if (page.firstPosition == -1) {
+			page.firstPosition = i;
+		}
+
+		QChar c = fileInfo->text.at(i);
+		line.append(c);
+		width += getFontWidth(&fm, c);
+		if (c == '\n' || width >= maxWidth) {
+			page.lines.append(line);
+			line.clear();
+			width = 0;
+
+			if (page.lines.size() >= maxLine) {
+
+				textPages.insert(pageCnt++, page);
+				page = TextViewContainer::PageInfo();
+			}
+		}
+	}
+
+	if (!line.isEmpty()) {
+		page.lines.append(line);
+	}
+
+	textPages.insert(pageCnt++, page);
+
+	return textPages;
+}
+/*
+void TextViewContainer::testText() {
+
+	PageInfo p = m_fileInfo.pageInfos.value(m_fileInfo.currentPageIdx);
+	QFontMetrics fm(ui_TextBrowsers[0]->font());
+	int width = 0;
+
+	for (int i = 0; i < p.lines.size(); i++) {
+		int width = 0;
+		for (int j = 0; j < p.lines.at(i).length(); j++) {
+			QChar c = p.lines.at(i).at(j);
+			int w = getFontWidth(&fm, c);
+			width += w;
+			qDebug() << QString(c) << " : " << w;
+		}
+		qDebug() << "----------------- " << getMaxWidth(ui_TextBrowsers[0]);
+		qDebug() << p.lines.at(i);
+		qDebug() << "line width: " << width << " , w2 : " << fm.horizontalAdvance(p.lines.at(i));
+	}
+
+
+}*/
+
+
+int TextViewContainer::getFontWidth(QFontMetrics* fm, QChar c) {
+	if (!m_charWidthCache.contains(c)) {
+		int width = fm->horizontalAdvance(c); // 글자의 너비
+		//width += fm->rightBearing(c); // 오른쪽 여백
+
+		// 탭 간격을 고려
+		if (c == '\t') {
+			//   width = fm->horizontalAdvance(' ') * 4; // 예: 탭 간격을 4개의 공백으로 설정
+		}
+
+		m_charWidthCache.insert(c, width);  // 캐시에 값 저장
+	}
+	return m_charWidthCache.value(c);
+}
+
+
+int TextViewContainer::getMaxHeight(QTextBrowser* tb) {
+	QFontMetrics fm(tb->font());
+	int lineHeight = fm.lineSpacing() * m_settings.getLineSpacing();
+
+	return ((tb->height() - (m_settings.getPadding().top() + m_settings.getPadding().bottom())) / lineHeight) - 1;  // 세로 방향으로 표시 가능한 줄 수
+}
+int TextViewContainer::getMaxWidth(QTextBrowser* tb) {
+
+	return ui_TextBrowsers[0]->viewport()->width() - m_settings.getPadding().left() - m_settings.getPadding().right() - 3;
+}
+
+
+
+const TextViewContainer::FileInfo* TextViewContainer::getFileInfo() {
+	return &m_fileInfo;
+}
+
+/*
+	Search
+*/
+
+void TextViewContainer::performSearch(QString searchText, const FileInfo* fileInfo) {
+
+	for (long i = 0; i < fileInfo->pageInfos.size(); i++) {
+		QVector<QString> lines = fileInfo->pageInfos.value(i).lines;
+		for (long j = 0; j < lines.size(); j++) {
+			QString line = lines.at(j);
+			if (line.contains(searchText)) {
+				emit searchResultReady(line, i, j);
+			}
+		}
+	}
+
 }

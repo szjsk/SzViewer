@@ -76,3 +76,43 @@ void StatusStore::setImageSettings(const ImageSettingProps& newSettings) {
     m_imageSettingProps = newSettings;
     saveSetting(&m_imageSettingProps);
 }
+
+void StatusStore::setTextHistory(const HistoryBookmarkProps& settings) {
+	m_textHistory = settings;
+	saveSetting(&m_textHistory);
+}
+
+HistoryBookmarkProps StatusStore::getTextHistory() {
+	loadSetting(&m_textHistory);
+	return m_textHistory;
+}
+
+void StatusStore::setTextBookmark(const HistoryBookmarkProps& settings) {
+	m_textBookmark = settings;
+	saveSetting(&m_textBookmark);
+}
+
+HistoryBookmarkProps StatusStore::getTextBookmark() {
+	loadSetting(&m_textBookmark);
+	return m_textBookmark;
+}
+
+void StatusStore::setImageHistory(const HistoryBookmarkProps& settings) {
+	m_imageHistory = settings;
+	saveSetting(&m_imageHistory);
+}
+
+HistoryBookmarkProps StatusStore::getImageHistory() {
+	loadSetting(&m_imageHistory);
+	return m_imageHistory;
+}
+
+void StatusStore::setImageBookmark(const HistoryBookmarkProps& settings) {
+	m_imageBookmark = settings;
+	saveSetting(&m_imageBookmark);
+}
+
+HistoryBookmarkProps StatusStore::getImageBookmark() {
+	loadSetting(&m_imageBookmark);
+	return m_imageBookmark;
+}

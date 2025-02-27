@@ -1,66 +1,71 @@
 ﻿#include "TextToolBar.h"
+#include "TextSettingDialog.h"
+#include "TextSearchDialog.h"
+#include "TextSettingProps.h"
+
+#include <QAction>
+#include <QComboBox>
+#include <QPushButton>
+
 
 TextToolBar::TextToolBar(QWidget* parent, TextViewContainer* textViewContainer)
-	: QToolBar(parent), m_textViewContainer(textViewContainer)
+	: QToolBar(parent)
 {
-    setMovable(true);
+	setMovable(true);
 
-    QAction* settingAction = new QAction(QIcon(":/path/to/icon.png"), "Setting", this);
-    connect(settingAction, &QAction::triggered, this, &TextToolBar::openSettingDialog);
-    this->addAction(settingAction);
+	//text setting
+	QAction* settingAction = new QAction(QIcon(":/path/to/icon.png"), "Setting", this);
+	connect(settingAction, &QAction::triggered, this, [this, textViewContainer]() {
+		openSettingDialog(textViewContainer);
+		});
+	this->addAction(settingAction);
 
-    QAction* searchAction = new QAction(QIcon(":/path/to/icon.png"), "Search", this);
-    connect(searchAction, &QAction::triggered, this, &TextToolBar::openSearchDialog);
-    this->addAction(searchAction);
+	//text search
+	QAction* searchAction = new QAction(QIcon(":/path/to/icon.png"), "Search", this);
+	connect(searchAction, &QAction::triggered, this, [this, textViewContainer]() {
+		openSearchDialog(textViewContainer);
+		});
+	this->addAction(searchAction);
 
-    QAction* splitAction = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
+	//container split
+	QAction* splitAction = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
 	this->addAction(splitAction);
+	connect(splitAction, &QAction::triggered, this, [this, textViewContainer]() {
+		textViewContainer->changeSplitView();
+		textViewContainer->refreshPage(textViewContainer->getFileInfo()->currentPosition);
+		});
 
-    // 클릭 시 동작 정의
-    connect(splitAction, &QAction::triggered, this, [this]() {
-        TextSettingProps setting = StatusStore::instance().getTextSettings();
-        setting.setSplitView(m_textViewContainer->changeSplitView());
-        StatusStore::instance().saveSetting(&setting);
-        });
-
-    QAction* move6Action = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
-    connect(move6Action, &QAction::triggered, this, [this]() {m_textViewContainer->deleteFile();});
-    this->addAction(move6Action);
+	//delete file
+	QAction* deleteAction = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
+	connect(deleteAction, &QAction::triggered, this, [this, textViewContainer]() {
+		textViewContainer->deleteFile(textViewContainer->getFileInfo());
+		});
+	this->addAction(deleteAction);
 }
 
-void TextToolBar::openSearchDialog()
+void TextToolBar::openSearchDialog(TextViewContainer* textViewContainer)
 {
-    TextSearchDialog dialog(this, m_textViewContainer->getTextChunks());
-    connect(&dialog, &TextSearchDialog::rowSelected, this, &TextToolBar::goToTextPage);
-    dialog.exec();
+	TextSearchDialog dialog(this, textViewContainer);
+	connect(&dialog, &TextSearchDialog::rowSelected, this, [this, textViewContainer](QString searchText, long page, long line) {
+		textViewContainer->findPage(searchText, page, line);
+		});
+	dialog.exec();
 }
 
-
-void TextToolBar::goToTextPage(const QString& searchText, long page, long line)
+void TextToolBar::openSettingDialog(TextViewContainer* textViewContainer)
 {
-    m_textViewContainer->findPage(searchText, page, line);
-}
+	TextSettingDialog dialog(textViewContainer->getTextSettingProps(), this);
+	connect(&dialog, &TextSettingDialog::settingsChanged, this, [this, textViewContainer](TextSettingProps settings) {
+		textViewContainer->changeStyle(settings);
+		});
 
+	if (dialog.exec() == QDialog::Accepted) {
+		textViewContainer->saveTextSettingProps(dialog.getTextSettings());
+		textViewContainer->refreshPage(textViewContainer->getFileInfo()->currentPosition);
+	}
+	else {
+		textViewContainer->changeStyle(textViewContainer->getTextSettingProps());
+		textViewContainer->refreshPage(textViewContainer->getFileInfo()->currentPosition);
+	}
 
-void TextToolBar::openSettingDialog()
-{
-    TextSettingDialog dialog(StatusStore::instance().getTextSettings(), this);
-    connect(&dialog, &TextSettingDialog::settingsChanged, this, &TextToolBar::updateSettingPreview);
-
-    if (dialog.exec() == QDialog::Accepted) {
-        TextSettingProps settings = dialog.getTextSettings();
-        StatusStore::instance().saveSetting(&settings);
-        m_textViewContainer->refreshPage();
-    }
-    else {
-        m_textViewContainer->setSettings(StatusStore::instance().getTextSettings());
-        m_textViewContainer->refreshPage();
-    }
-
-}
-
-void TextToolBar::updateSettingPreview(const TextSettingProps& settings)
-{
-    // 즉시 반영
-    m_textViewContainer->setSettings(settings);
 }

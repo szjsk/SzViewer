@@ -335,3 +335,58 @@ void ImageViewContainer::deleteImageFile() {
 
     emit deleteKeyPressed(files, m_fileList.at(nextIndex));
 }
+
+/*
+#include <QMap>
+#include <QImage>
+#include <QByteArray>
+#include <QString>
+#include <QIODevice>
+#include "quazip.h"
+#include "quazipfile.h"
+
+// 압축 파일 경로로부터 이미지들을 메모리 내 QMap으로 로드하는 예제
+QMap<QString, QImage> loadImagesFromArchive(const QString &zipFilePath) {
+    QMap<QString, QImage> imageMap;
+
+    QuaZip zip(zipFilePath);
+    if (!zip.open(QuaZip::mdUnzip)) {
+        qDebug() << "압축 파일 열기 실패:" << zipFilePath;
+        return imageMap;
+    }
+
+    QuaZipFile zipFile(&zip);
+    // 압축 파일 내부의 모든 파일 순회
+    for (bool more = zip.goToFirstFile(); more; more = zip.goToNextFile()) {
+        QString fileName = zip.getCurrentFileName();
+
+        // 확장자로 이미지 파일만 선택 (대소문자 구분 X)
+        if (fileName.endsWith(".jpg", Qt::CaseInsensitive) ||
+            fileName.endsWith(".jpeg", Qt::CaseInsensitive) ||
+            fileName.endsWith(".png", Qt::CaseInsensitive) ||
+            fileName.endsWith(".bmp", Qt::CaseInsensitive) ||
+            fileName.endsWith(".gif", Qt::CaseInsensitive) ||
+            fileName.endsWith(".webp", Qt::CaseInsensitive)) {
+
+            if (!zipFile.open(QIODevice::ReadOnly)) {
+                qDebug() << "파일 열기 실패:" << fileName;
+                continue;
+            }
+
+            QByteArray fileData = zipFile.readAll();
+            QImage image;
+            if (image.loadFromData(fileData)) {
+                imageMap.insert(fileName, image);
+            } else {
+                qDebug() << "이미지 로드 실패:" << fileName;
+            }
+
+            zipFile.close();
+        }
+    }
+
+    zip.close();
+    return imageMap;
+}
+
+*/

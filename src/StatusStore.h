@@ -6,6 +6,7 @@
 #include <QMargins>
 #include "textviewer/TextSettingProps.h"
 #include "imageviewer/ImageSettingProps.h"
+#include "HistoryBookMarkProps.h"
 #include "IJsonSerializable.h"
 #include <QFileInfo>
 
@@ -22,8 +23,21 @@ public:
 
     TextSettingProps getTextSettings();
     void setTextSettings(const TextSettingProps& settings);
+
     ImageSettingProps getImageSettings();
 	void setImageSettings(const ImageSettingProps& settings);
+
+    HistoryBookmarkProps getTextHistory();
+    void setTextHistory(const HistoryBookmarkProps& settings);
+
+    HistoryBookmarkProps getTextBookmark();
+    void setTextBookmark(const HistoryBookmarkProps& settings);
+
+    HistoryBookmarkProps getImageHistory();
+    void setImageHistory(const HistoryBookmarkProps& settings);
+
+    HistoryBookmarkProps getImageBookmark();
+    void setImageBookmark(const HistoryBookmarkProps& settings);
 
 private:
     StatusStore();
@@ -33,6 +47,10 @@ private:
 
     TextSettingProps m_textSettingProps;
     ImageSettingProps m_imageSettingProps;
+    HistoryBookmarkProps m_textHistory = HistoryBookmarkProps(HistoryBookmarkProps::TEXT_HISTORY);
+    HistoryBookmarkProps m_textBookmark = HistoryBookmarkProps(HistoryBookmarkProps::TEXT_BOOKMARK);
+    HistoryBookmarkProps m_imageHistory = HistoryBookmarkProps(HistoryBookmarkProps::IMAGE_HISTORY);
+    HistoryBookmarkProps m_imageBookmark = HistoryBookmarkProps(HistoryBookmarkProps::IMAGE_BOOKMARK);
 
 };
 
