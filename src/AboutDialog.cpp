@@ -39,7 +39,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     const QString aboutText = R"(
         <p><b>작성자</b> : 황재식<br>
         <b>이메일</b> : <a href="mailto:sizz.js@gmail.com">sizz.js@gmail.com</a></p>
-        <b>버전</b> : 0.1.0 (2025.02.22)</p>
+        <b>버전</b> : 0.1.1 (2025.02.28)</p>
     )";
 
 
