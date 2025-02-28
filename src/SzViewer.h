@@ -18,6 +18,7 @@
 #include <QToolButton>
 #include <QMimeData>
 #include <QWidgetAction>
+#include <QMessageBox>
 
 class SzViewer : public QMainWindow
 {

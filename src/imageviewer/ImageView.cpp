@@ -3,19 +3,19 @@
 #include "../common/StatusStore.h"
 
 ImageView::ImageView(QWidget* parent, ScaleMode scaleMode , int percentage)
-    : QScrollArea(parent), m_label(new QLabel(this)), m_scaleMode(scaleMode), m_percentage(percentage)
+    : QScrollArea(parent), ui_label(new QLabel(this)), m_scaleMode(scaleMode), m_percentage(percentage)
 {
 
     setWidgetResizable(true);
     setContentsMargins(0, 0, 0, 0);  // 스크롤 영역의 마진을 0으로 설정
     setFrameStyle(QFrame::NoFrame);  // 스크롤 영역의 경계를 제거
 
-    m_label = new QLabel(this);
-    m_label->setAlignment(Qt::AlignCenter);
-    m_label->setContentsMargins(0, 0, 0, 0);  // QLabel의 마진을 0으로 설정
-    m_label->setFrameStyle(QFrame::NoFrame);
+    ui_label = new QLabel(this);
+    ui_label->setAlignment(Qt::AlignCenter);
+    ui_label->setContentsMargins(0, 0, 0, 0);  // QLabel의 마진을 0으로 설정
+    ui_label->setFrameStyle(QFrame::NoFrame);
 
-	this->setWidget(m_label);
+	this->setWidget(ui_label);
 }
 
 void ImageView::clear() {
@@ -23,7 +23,7 @@ void ImageView::clear() {
     delete m_pixmap;
 	m_pixmap = nullptr;
 	m_originSize = QSize();
-	m_label->clear();
+	ui_label->clear();
 }
 
 void ImageView::loadImage(QString& filePath)
@@ -38,7 +38,7 @@ void ImageView::loadImage(QString& filePath)
 
     if (suffix == "gif") {
         m_isGif = true;
-        m_originMovie = new QMovie(filePath, QByteArray(), m_label);
+        m_originMovie = new QMovie(filePath, QByteArray(), ui_label);
         m_originMovie->jumpToFrame(0);
 		m_originSize = m_originMovie->currentPixmap().size();
     }
@@ -58,19 +58,19 @@ void ImageView::resize(ScaleMode mode, int percentage) {
 	}
 
 	if (m_isGif) {
-		setGif(m_originMovie, m_label);
+		setGif(m_originMovie, ui_label);
 	}
 	else {
-		setImg(m_pixmap, m_label);
+		setImg(m_pixmap, ui_label);
 	}
-    m_label->adjustSize();
+    ui_label->adjustSize();
 }
 
 void ImageView::setGif(QMovie* movie, QLabel* label) {
     if (!movie->isValid())
     {
-        m_label->movie()->stop();
-        m_label->setMovie(nullptr);
+        ui_label->movie()->stop();
+        ui_label->setMovie(nullptr);
         label->clear();
         label->setText("can not load gif");
         return;
@@ -146,7 +146,7 @@ QPixmap ImageView::getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode 
 void ImageView::movieStop() {
     if (m_isGif && m_originMovie) {
         m_originMovie->stop();
-        m_label->setMovie(nullptr);
+        ui_label->setMovie(nullptr);
         delete m_originMovie;
         m_originMovie = nullptr;
     }

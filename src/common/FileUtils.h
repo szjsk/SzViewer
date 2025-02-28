@@ -10,11 +10,17 @@ public:
 		IMAGE,
 	};
 
+	enum MoveMode {
+		NextFolder,
+		PrevFolder,
+	};
+
 	FileUtils();
 	static void sortByWindow(QStringList& fileList);
 	static QString MoveFile(QStringList& fileList, QString currentFile, int moveIdx);
 	static QStringList getFileList(QString currentFile, SupportType type);
 	static bool isSupportSuffix(QString currentFile, SupportType type);
+	static QString moveFolder(QString fileName, MoveMode moveMode, SupportType type);
 };
 
 #endif 

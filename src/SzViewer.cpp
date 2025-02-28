@@ -56,7 +56,7 @@ SzViewer::~SzViewer()
 
 void SzViewer::handleDeleteKey(QStringList files, QString nextFile) {
 
-	QString nextFolderFile = ui_imageViewContainer->isVisible() ? ui_imageViewContainer->navigateToFolder(files[0], ImageView::MoveMode::NextFolder) : QString();
+	QString nextFolderFile = ui_imageViewContainer->isVisible() ? FileUtils::moveFolder(files[0], FileUtils::NextFolder, FileUtils::IMAGE) : QString();
 
 	DeleteFilesDialog dialog(files, m_deleteFolder, this);
 	if (dialog.exec() == QDialog::Accepted) {
@@ -285,5 +285,8 @@ void SzViewer::openFile(QString fileName) {
 	else if (FileUtils::isSupportSuffix(fileName, FileUtils::TEXT)) {
 		changeVisible(false);
 		ui_textViewContainer->initTextFile(fileName);
+	}
+	else {
+		QMessageBox::warning(this, "경고", "지원하는 이미지/텍스트 파일이 아닙니다.");
 	}
 }

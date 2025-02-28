@@ -1,15 +1,7 @@
 #include "ImageViewContainer.h"
 #include "../common/FileUtils.h"
 
-static constexpr int M_IMAGE_BROWSER_CNT = 2;
-QSlider* ui_qSlider;
-QLabel* ui_qSliderInfo;
-ImageView* ui_imageView[M_IMAGE_BROWSER_CNT];
-QStringList m_fileList;
-QString m_fileName;
-int m_currentIndex = 0;
-int m_percentage = 100;
-ImageView::ScaleMode m_scaleMode = ImageView::FitToWindow;
+
 
 ImageViewContainer::ImageViewContainer(QWidget* parent)
 	: QWidget(parent)
@@ -41,7 +33,7 @@ ImageViewContainer::ImageViewContainer(QWidget* parent)
     connect(ui_qSlider, &QSlider::valueChanged, this, [this](int value) {
         m_currentIndex = value;
         navigateToFile(ImageView::None);
-        ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(ui_qSlider->maximum()+1));
+        ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex).arg(ui_qSlider->maximum()));
         });
 
 }
@@ -57,7 +49,7 @@ void ImageViewContainer::clear() {
 	m_currentIndex = 0;
 	ui_qSlider->setValue(0);
 	ui_qSlider->setMaximum(0);
-	ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex + 1).arg(ui_qSlider->maximum() + 1));
+	ui_qSliderInfo->setText(QString("count: %1 / %2").arg(0).arg(0));
 }
 
 QHBoxLayout* ImageViewContainer::createSlider() {
@@ -72,82 +64,25 @@ QHBoxLayout* ImageViewContainer::createSlider() {
 }
 
 void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
-	QString file = navigateToFolder(m_fileName, moveMode);
-    if (!file.isEmpty()) {
-        loadFileList(file);
-    }
-}
-
-QString ImageViewContainer::navigateToFolder(QString fileName, ImageView::MoveMode moveMode) {
-
-    // 현재 파일이 속한 폴더
-    QFileInfo currentFileInfo(fileName);
-    QDir currentFolder = currentFileInfo.dir();
-
-    // 부모 폴더로 이동
-    QDir parentDir = currentFolder;
-    if (!parentDir.cdUp()) {
-        qDebug() << "부모 폴더로 이동 실패";
-        return QString();
-    }
-
-    // 부모 폴더 내의 모든 서브 폴더 리스트 (알파벳 순)
-    QStringList folderNames = parentDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-    if (folderNames.isEmpty()) {
-        qDebug() << "부모 폴더에 하위 폴더가 없습니다.";
-        return QString();
-    }
-
-    QCollator collator;
-    collator.setNumericMode(true);
-    std::sort(folderNames.begin(), folderNames.end(),
-        [&collator](const QString& s1, const QString& s2) {
-            return collator.compare(s1, s2) < 0;
-        });
-
-    // 현재 폴더 이름 및 인덱스 결정
-    QString currentFolderName = currentFolder.dirName();
-    int index = folderNames.indexOf(currentFolderName);
-    if (index < 0) {
-        qDebug() << "현재 폴더를 부모 폴더 내에서 찾을 수 없습니다.";
-        return QString();
-    }
-
-    // next 또는 prev 폴더 인덱스 계산
-    int nextIndex = -1;
+    QString file;
+    
     if (moveMode == ImageView::MoveMode::NextFolder) {
-        nextIndex = index + 1;
-    }
-    else if (moveMode == ImageView::MoveMode::PrevFolder) {
-        nextIndex = index - 1;
-    }
-
-    // 범위를 벗어나면 아무것도 하지 않음
-    if (nextIndex < 0 || nextIndex >= folderNames.size()) {
-        qDebug() << "폴더 이동 범위를 벗어났습니다.";
-        return QString();
-    }
-
-    // 다음(또는 이전) 폴더 경로 결정
-    QString nextFolderName = folderNames.at(nextIndex);
-    QDir nextFolder(parentDir.absoluteFilePath(nextFolderName));
-
-    QStringList fileNames = nextFolder.entryList(QDir::Files, QDir::Name);
-
-    std::sort(fileNames.begin(), fileNames.end(),
-        [&collator](const QString& s1, const QString& s2) {
-            return collator.compare(s1, s2) < 0;
-        });
-
-	if (!fileNames.isEmpty()) {
-        QString file = nextFolder.absoluteFilePath(fileNames[0]);
-        //loadFileList(file);
-		return file;
+		 file = FileUtils::moveFolder(m_fileName, FileUtils::MoveMode::NextFolder, FileUtils::IMAGE);
 	}
-    return QString();
+    else if (moveMode == ImageView::MoveMode::PrevFolder) {
+        file = FileUtils::moveFolder(m_fileName, FileUtils::MoveMode::PrevFolder, FileUtils::IMAGE);
+    }
+
+    if (file.isEmpty()) {
+        QMessageBox::warning(this, "경고", "이미지가 존재하는 다음/이전폴더가 없습니다.");
+        return;
+    }
+
+    loadFileList(file);
+
 }
 
-void ImageViewContainer::loadFileList(QString& filePath) {
+void ImageViewContainer::loadFileList(QString filePath) {
 	m_fileName = filePath;
     QFileInfo fileInfo(m_fileName);
     
@@ -155,23 +90,12 @@ void ImageViewContainer::loadFileList(QString& filePath) {
 
     m_fileList = FileUtils::getFileList(filePath, FileUtils::IMAGE);
    
-
-    //ui_qSlider->setValue(m_currentIndex);
-    ui_qSlider->setMaximum(m_fileList.size() - 1);
-
-    QCollator collator;
-    collator.setNumericMode(true);
-    std::sort(m_fileList.begin(), m_fileList.end(),
-        [&collator](const QString& s1, const QString& s2) {
-            return collator.compare(s1, s2) < 0;
-        });
-
-
+    ui_qSlider->setMaximum(m_fileList.size()-1);
     m_currentIndex = m_fileList.indexOf(filePath);
 	m_currentIndex = m_currentIndex < 0 ? 0 : m_currentIndex;
     navigateToFile(ImageView::None);
 
-    ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(ui_qSlider->maximum()+1));
+    ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex).arg(ui_qSlider->maximum()));
 
 
     this->window()->activateWindow();

@@ -39,19 +39,20 @@ public:
 	void clear();
 
 private:
-	QScrollArea* m_scrollArea;
-	QLabel* m_label;
+	void setGif(QMovie* movie, QLabel* label);
+	void setImg(QPixmap* pixmap, QLabel* label);
+	QPixmap getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode mode, int percentage);
+	QMovie* getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mode, int percentage);
+	
+private: //variables
+	QScrollArea* ui_scrollArea;
+	QLabel* ui_label;
 	ScaleMode m_scaleMode;
 	QMovie* m_originMovie;
 	QSize m_originSize;
 	QPixmap* m_pixmap;
 	int m_percentage;
 	bool m_isGif = false;
-
-	void setGif(QMovie* movie, QLabel* label);
-	void setImg(QPixmap* pixmap, QLabel* label);
-	QPixmap getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode mode, int percentage);
-	QMovie* getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mode, int percentage);
 };
 
 #endif // IMAGEVIEW_H
