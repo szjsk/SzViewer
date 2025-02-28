@@ -3,7 +3,21 @@
 #include <QtWidgets/QMainWindow>
 #include <QMenu>
 #include "common/HistoryProps.h"
+#include "textviewer/TextViewContainer.h"
+#include "textviewer/TextToolBar.h"
+#include "AboutDialog.h"
+#include "common/DeleteFilesDialog.h"
+#include "imageviewer/ImageViewContainer.h"
+#include "imageviewer/ImageToolbar.h"
+#include "common/HistoryCheckBoxItem.h"
+#include "common/FileUtils.h"
 
+#include <QStackedWidget>
+#include <QSettings>
+#include <QFileDialog>
+#include <QToolButton>
+#include <QMimeData>
+#include <QWidgetAction>
 
 class SzViewer : public QMainWindow
 {
@@ -13,10 +27,6 @@ public:
     SzViewer(QWidget *parent = nullptr);
     ~SzViewer();
 
-private:
-    bool isTextFile(const QString& fileName);
-    void openFile(QString fileName);
-    void addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryProps::SavedType type);
 
 protected:
     void resizeEvent(QResizeEvent* event);
@@ -29,4 +39,19 @@ protected:
 private slots:
     void openFileDialog();
 	void handleDeleteKey(QStringList files, QString nextFile);
+
+private:
+    bool isTextFile(const QString& fileName);
+    void openFile(QString fileName);
+    void addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryProps::SavedType type);
+    void addQActionInFileMenu(QMenu* fileMenu);
+
+ //variable
+private:
+    bool m_deleteFolder = false;
+    TextViewContainer* ui_textViewContainer;
+    ImageViewContainer* ui_imageViewContainer;
+    QStackedWidget* ui_stackedWidget;
+    TextToolBar* ui_textToolBar;
+    ImageToolBar* ui_imageToolBar;
 };

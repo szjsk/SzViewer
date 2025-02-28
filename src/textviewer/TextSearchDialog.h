@@ -4,6 +4,9 @@
 #include <QDialog>
 #include <QString>
 #include "TextViewContainer.h"
+#include <QLineEdit>
+#include <QPushButton>
+#include <QTableWidget>
 
 class QLineEdit;
 class QPushButton;
@@ -24,6 +27,12 @@ signals:
 
 private:
     void addResult(QString line, long page, long position);
+
+    //variable
+private:
+    QLineEdit* ui_searchLineEdit;
+    QPushButton* ui_searchButton;
+    QTableWidget* ui_resultTable;
 };
 
 #endif // TEXTSEARCHDIALOG_H

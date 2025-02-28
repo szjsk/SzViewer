@@ -46,14 +46,15 @@ public:
     void fromJson(const QJsonObject &json) override;
 	QString getFileName() override;
 
+	//variable
 private:
-    bool splitView;
-    bool textView;
-    QFont font;
-    QColor textColor;
-    QColor backgroundColor;
-    QMargins padding;
-    double lineSpacing;
+    bool m_splitView;
+    bool m_textView;
+    QFont m_font;
+    QColor m_textColor;
+    QColor m_backgroundColor;
+    QMargins m_padding;
+    double m_lineSpacing;
 };
 
 #endif // TEXTSETTINGS_H

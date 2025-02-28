@@ -1,22 +1,6 @@
 ﻿#include "TextSettingDialog.h"
 
-QLineEdit* ui_searchEdit;
-QComboBox* ui_fontCombo;
-QSpinBox* ui_fontSizeSpin;
-QCheckBox* ui_boldCheck;
-QCheckBox* ui_italicCheck;
-QDoubleSpinBox* ui_lineSpacingSpin;
-QDialogButtonBox* ui_buttonBox;
 
-// 색상 및 패딩 선택을 위한 추가 멤버
-QPushButton* ui_textColorButton;
-QPushButton* ui_backgroundColorButton;
-QColor ui_textColor;
-QColor ui_backgroundColor;
-QSpinBox* ui_paddingTopSpin;
-QSpinBox* ui_paddingBottomSpin;
-QSpinBox* ui_paddingLeftSpin;
-QSpinBox* ui_paddingRightSpin;
 
 
 TextSettingDialog::TextSettingDialog(TextSettingProps settings, QWidget* parent)

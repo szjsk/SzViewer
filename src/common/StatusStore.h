@@ -18,8 +18,6 @@ public:
         return instance;
     }
 
-
-
     TextSettingProps& getTextSettings();
     void saveTextSettings(TextSettingProps settings);
 
@@ -41,7 +39,6 @@ private:
     StatusStore& operator=(const StatusStore&) = delete;
     IJsonSerializable* loadSetting(IJsonSerializable* fileName);
     void saveSetting(IJsonSerializable* jsonObj);
-    //HistoryProps caclulateHistorySize(HistoryProps::SavedType type, QHash<QString, SavedFileInfo> allInfos);
 };
 
 #endif // StatusStore_H

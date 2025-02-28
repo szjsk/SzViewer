@@ -1,30 +1,4 @@
 #include "TextViewContainer.h"
-#include "../common/StatusStore.h"
-#include "../common/FileUtils.h"
-#include "../common/StatusStore.h"
-
-#include <QHBoxLayout>
-#include <QFile>
-#include <QTextCursor>
-#include <QTextDocument>
-#include <QSizeF>
-#include <QAbstractTextDocumentLayout>
-#include <QTimer>
-#include <QSlider>
-#include <QLabel>
-
-#include <QFileInfo>
-#include <QDir>
-#include <QCollator>
-#include <QHash>
-
-QHash<QChar, int> m_charWidthCache;
-static constexpr int M_TEXT_BROWSER_CNT = 2;
-QTextBrowser* ui_TextBrowsers[M_TEXT_BROWSER_CNT];
-QLabel* ui_QSliderInfo;
-QSlider* ui_QSlider;
-
-TextViewContainer::FileInfo m_fileInfo;
 
 TextViewContainer::TextViewContainer(QWidget* parent)
 	: QWidget(parent)
@@ -152,6 +126,8 @@ int TextViewContainer::findTextPageBy(const FileInfo* fileInfo, long position) {
 			return i;
 		}
 	}
+
+	return 0;
 }
 
 void TextViewContainer::findPage(const QString& text, long page, long line) {

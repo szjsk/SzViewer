@@ -4,6 +4,24 @@
 #include <QTextBrowser>
 #include "TextSettingProps.h"
 #include "../common/HistoryProps.h"
+#include "../common/StatusStore.h"
+#include "../common/FileUtils.h"
+#include "../common/StatusStore.h"
+
+#include <QHBoxLayout>
+#include <QFile>
+#include <QTextCursor>
+#include <QTextDocument>
+#include <QSizeF>
+#include <QAbstractTextDocumentLayout>
+#include <QTimer>
+#include <QSlider>
+#include <QLabel>
+
+#include <QFileInfo>
+#include <QDir>
+#include <QCollator>
+#include <QHash>
 
 class TextViewContainer : public QWidget
 {
@@ -66,6 +84,15 @@ protected:
 signals:
     void deleteKeyPressed(QStringList files, QString nextFile);
 	void searchResultReady(QString searchText, long page, int line);
+
+    //variable
+private:
+    QHash<QChar, int> m_charWidthCache;
+    static constexpr int M_TEXT_BROWSER_CNT = 2;
+    QTextBrowser* ui_TextBrowsers[M_TEXT_BROWSER_CNT];
+    QLabel* ui_QSliderInfo;
+    QSlider* ui_QSlider;
+    TextViewContainer::FileInfo m_fileInfo;
 };
 
 #endif // TEXTVIEWCONTAINER_H

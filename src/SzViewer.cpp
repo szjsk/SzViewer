@@ -1,27 +1,4 @@
 ﻿#include "SzViewer.h"
-#include "textviewer/TextViewContainer.h"
-#include "textviewer/TextToolBar.h"
-#include "AboutDialog.h"
-#include "common/DeleteFilesDialog.h"
-#include "imageviewer/ImageViewContainer.h"
-#include "imageviewer/ImageToolbar.h"
-#include "common/HistoryCheckBoxItem.h"
-#include "common/FileUtils.h"
-
-#include <QStackedWidget>
-#include <QSettings>
-#include <QFileDialog>
-#include <QToolButton>
-#include <QMimeData>
-#include <QWidgetAction>
-
-bool m_deleteFolder = false;
-
-TextViewContainer* ui_textViewContainer;
-ImageViewContainer* ui_imageViewContainer;
-QStackedWidget* ui_stackedWidget;
-TextToolBar* ui_textToolBar;
-ImageToolBar* ui_imageToolBar;
 
 SzViewer::SzViewer(QWidget* parent)
 	: QMainWindow(parent)
@@ -123,24 +100,27 @@ QToolBar* SzViewer::CommonLeft() {
 	connect(openAction, &QAction::triggered, this, &SzViewer::openFileDialog);
 
 	connect(fileMenu, &QMenu::aboutToShow, [this, fileMenu]() {
-
-		QList<QAction*> actions = fileMenu->actions();
-		// 첫 번째 액션은 삭제하지 않음
-		for (int i = actions.size() - 1; i > 0; i--) {
-			fileMenu->removeAction(actions.at(i));
-		}
-
-		HistoryProps textProps = StatusStore::instance().getTextHistory();
-		addHistoryCheckBox(fileMenu, textProps, HistoryProps::SavedType::TEXT_HISTORY);
-
-		HistoryProps imgProps = StatusStore::instance().getImageHistory();
-		addHistoryCheckBox(fileMenu, imgProps, HistoryProps::SavedType::IMAGE_HISTORY);
+		addQActionInFileMenu(fileMenu);
 	});
 
 	fileToolButton->setMenu(fileMenu);
 	toolBar->addWidget(fileToolButton);
 
 	return toolBar;
+}
+
+void SzViewer::addQActionInFileMenu(QMenu* fileMenu) {
+	QList<QAction*> actions = fileMenu->actions();
+	// 첫 번째 액션은 삭제하지 않음
+	for (int i = actions.size() - 1; i > 0; i--) {
+		fileMenu->removeAction(actions.at(i));
+	}
+
+	HistoryProps textProps = StatusStore::instance().getTextHistory();
+	addHistoryCheckBox(fileMenu, textProps, HistoryProps::SavedType::TEXT_HISTORY);
+
+	HistoryProps imgProps = StatusStore::instance().getImageHistory();
+	addHistoryCheckBox(fileMenu, imgProps, HistoryProps::SavedType::IMAGE_HISTORY);
 }
 
 void SzViewer::addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryProps::SavedType type) {
@@ -167,9 +147,10 @@ void SzViewer::addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryPr
 			StatusStore::instance().savedFixedState(type, fileName, checked);
 		});
 
-		connect(checkBox, &HistoryCheckBoxItem::labelClicked, [this, fileName]() {
+		connect(checkBox, &HistoryCheckBoxItem::labelClicked, [this, fileName, fileMenu]() {
 			qDebug() << "라벨 클릭:" << fileName;
 			openFile(fileName);
+			fileMenu->close();  // 팝업 닫기
 		});
 	}
 

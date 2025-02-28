@@ -1,16 +1,9 @@
 ﻿#include "TextSearchDialog.h"
-#include <QLineEdit>
-#include <QPushButton>
-#include <QTableWidget>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>
 #include <QTableWidgetItem>
 #include <QTimer>
-
-QLineEdit* ui_searchLineEdit;
-QPushButton* ui_searchButton;
-QTableWidget* ui_resultTable;
 
 TextSearchDialog::TextSearchDialog(QWidget* parent, TextViewContainer* textViewContainer)
 	: QDialog(parent)

@@ -2,13 +2,13 @@
 #include <QJsonObject>
 
 TextSettingProps::TextSettingProps()
-    : splitView(false),
-      textView(true),
-      font(QFont("맑은 고딕", 16, QFont::Bold)),
-      textColor(Qt::black),
-      backgroundColor(QColor("#e8e4d2")), //#e8e4d2
-      padding(10, 10, 10, 10),
-      lineSpacing(1.0)
+    : m_splitView(false),
+      m_textView(true),
+      m_font(QFont("맑은 고딕", 16, QFont::Bold)),
+      m_textColor(Qt::black),
+      m_backgroundColor(QColor("#e8e4d2")), //#e8e4d2
+      m_padding(10, 10, 10, 10),
+      m_lineSpacing(1.0)
 {
 }
 
@@ -19,79 +19,79 @@ TextSettingProps::TextSettingProps(bool splitView,
                            const QColor &backgroundColor,
                            const QMargins &padding,
                            double lineSpacing)
-    : splitView(splitView),
-      textView(textView),
-      font(font),
-      textColor(textColor),
-      backgroundColor(backgroundColor),
-      padding(padding),
-      lineSpacing(lineSpacing)
+    : m_splitView(splitView),
+      m_textView(textView),
+      m_font(font),
+      m_textColor(textColor),
+      m_backgroundColor(backgroundColor),
+      m_padding(padding),
+      m_lineSpacing(lineSpacing)
 {
 }
 
-bool TextSettingProps::isSplitView() const { return splitView; }
-void TextSettingProps::setSplitView(bool value) { splitView = value; }
+bool TextSettingProps::isSplitView() const { return m_splitView; }
+void TextSettingProps::setSplitView(bool value) { m_splitView = value; }
 
-bool TextSettingProps::isTextView() const { return textView; }
-void TextSettingProps::setTextView(bool value) { textView = value; }
+bool TextSettingProps::isTextView() const { return m_textView; }
+void TextSettingProps::setTextView(bool value) { m_textView = value; }
 
-QFont TextSettingProps::getFont() const { return font; }
-void TextSettingProps::setFont(const QFont &font) { this->font = font; }
+QFont TextSettingProps::getFont() const { return m_font; }
+void TextSettingProps::setFont(const QFont &font) { this->m_font = font; }
 
-QColor TextSettingProps::getTextColor() const { return textColor; }
-void TextSettingProps::setTextColor(const QColor &color) { textColor = color; }
+QColor TextSettingProps::getTextColor() const { return m_textColor; }
+void TextSettingProps::setTextColor(const QColor &color) { m_textColor = color; }
 
-QColor TextSettingProps::getBackgroundColor() const { return backgroundColor; }
-void TextSettingProps::setBackgroundColor(const QColor &color) { backgroundColor = color; }
+QColor TextSettingProps::getBackgroundColor() const { return m_backgroundColor; }
+void TextSettingProps::setBackgroundColor(const QColor &color) { m_backgroundColor = color; }
 
-QMargins TextSettingProps::getPadding() const { return padding; }
-void TextSettingProps::setPadding(const QMargins &margins) { padding = margins; }
+QMargins TextSettingProps::getPadding() const { return m_padding; }
+void TextSettingProps::setPadding(const QMargins &margins) { m_padding = margins; }
 
-double TextSettingProps::getLineSpacing() const { return lineSpacing; }
-void TextSettingProps::setLineSpacing(double spacing) { lineSpacing = spacing; }
+double TextSettingProps::getLineSpacing() const { return m_lineSpacing; }
+void TextSettingProps::setLineSpacing(double spacing) { m_lineSpacing = spacing; }
 
 QJsonObject TextSettingProps::toJson() const {
     QJsonObject json;
-    json["splitView"] = splitView;
-    json["textView"]  = textView;
+    json["splitView"] = m_splitView;
+    json["textView"]  = m_textView;
 
     // QFont를 string으로 변환 (예: QFont::toString 활용)
-    json["font"] = font.toString();
+    json["font"] = m_font.toString();
 
-    json["textColor"] = textColor.name();
-    json["backgroundColor"] = backgroundColor.name();
+    json["textColor"] = m_textColor.name();
+    json["backgroundColor"] = m_backgroundColor.name();
 
-    json["paddingLeft"] = padding.left();
-    json["paddingTop"] = padding.top();
-    json["paddingRight"] = padding.right();
-    json["paddingBottom"] = padding.bottom();
+    json["paddingLeft"] = m_padding.left();
+    json["paddingTop"] = m_padding.top();
+    json["paddingRight"] = m_padding.right();
+    json["paddingBottom"] = m_padding.bottom();
 
-    json["lineSpacing"] = lineSpacing;
+    json["lineSpacing"] = m_lineSpacing;
     return json;
 }
 
 void TextSettingProps::fromJson(const QJsonObject &json) {
     if (json.contains("splitView"))
-        splitView = json["splitView"].toBool();
+        m_splitView = json["splitView"].toBool();
     if (json.contains("textView"))
-        textView = json["textView"].toBool();
+        m_textView = json["textView"].toBool();
 
     if (json.contains("font"))
-        font.fromString(json["font"].toString());
+        m_font.fromString(json["font"].toString());
 
     if (json.contains("textColor"))
-        textColor = QColor(json["textColor"].toString());
+        m_textColor = QColor(json["textColor"].toString());
     if (json.contains("backgroundColor"))
-        backgroundColor = QColor(json["backgroundColor"].toString());
+        m_backgroundColor = QColor(json["backgroundColor"].toString());
 
     int left = json.contains("paddingLeft") ? json["paddingLeft"].toInt() : 10;
     int top = json.contains("paddingTop") ? json["paddingTop"].toInt() : 10;
     int right = json.contains("paddingRight") ? json["paddingRight"].toInt() : 10;
     int bottom = json.contains("paddingBottom") ? json["paddingBottom"].toInt() : 10;
-    padding = QMargins(left, top, right, bottom);
+    m_padding = QMargins(left, top, right, bottom);
 
     if (json.contains("lineSpacing"))
-        lineSpacing = json["lineSpacing"].toDouble();
+        m_lineSpacing = json["lineSpacing"].toDouble();
 }
 QString TextSettingProps::getFileName() {
 	return "TextSettingProps.json";
