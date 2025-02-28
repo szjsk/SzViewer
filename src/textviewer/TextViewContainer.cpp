@@ -93,7 +93,9 @@ QTextBrowser* TextViewContainer::createTextBrowser(TextSettingProps settings) {
 	return tb;
 }
 
-void TextViewContainer::initTextFile(QString& filePath) {
+void TextViewContainer::initTextFile(QString filePath) {
+	qDebug() << "filePath: " << filePath;
+
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		qDebug() << "파일을 열 수 없습니다.";
@@ -109,11 +111,10 @@ void TextViewContainer::initTextFile(QString& filePath) {
 	m_fileInfo.fileName = QFileInfo(filePath).fileName();
 	m_fileInfo.fileNameWithPath = filePath;
 	m_fileInfo.currentPageIdx = 0;
-	m_fileInfo.fileList = FileUtils::getFileList(filePath);
+	m_fileInfo.fileList = FileUtils::getFileList(filePath, FileUtils::TEXT);
 	m_fileInfo.nextFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, 1);
 	m_fileInfo.prevFile = FileUtils::MoveFile(m_fileInfo.fileList, filePath, -1);
 	file.close();
-
 
 	refreshPage(history.textPosition);
 }

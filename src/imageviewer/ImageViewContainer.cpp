@@ -1,4 +1,5 @@
 #include "ImageViewContainer.h"
+#include "../common/FileUtils.h"
 
 static constexpr int M_IMAGE_BROWSER_CNT = 2;
 QSlider* ui_qSlider;
@@ -149,18 +150,12 @@ QString ImageViewContainer::navigateToFolder(QString fileName, ImageView::MoveMo
 void ImageViewContainer::loadFileList(QString& filePath) {
 	m_fileName = filePath;
     QFileInfo fileInfo(m_fileName);
-    QDir dir = fileInfo.dir();
-
-    QStringList fileNames = dir.entryList(QDir::Files, QDir::Name);
     
     m_fileList.clear();
-    for (const QString& name : fileNames) {
-        QFileInfo eachFileInfo(dir.absoluteFilePath(name));
-        QString suffix = eachFileInfo.suffix().toLower();
-        if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp") {
-            m_fileList.append(dir.absoluteFilePath(name));
-        }
-    }
+
+    m_fileList = FileUtils::getFileList(filePath, FileUtils::IMAGE);
+   
+
     //ui_qSlider->setValue(m_currentIndex);
     ui_qSlider->setMaximum(m_fileList.size() - 1);
 

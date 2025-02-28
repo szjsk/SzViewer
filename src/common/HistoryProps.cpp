@@ -40,11 +40,6 @@ void HistoryProps::addFileInfo(QString filename, long textPosition, QString text
 
     m_fileInfos.insert(fileInfo.fileName, fileInfo);
     m_fileInfos = caclulateHistorySize(m_fileInfos);
-
-	for (auto& fileInfo : m_fileInfos) {
-		qDebug() << fileInfo.fileName << " : " << fileInfo.savedDateTime;
-	}
-
 }
 
 

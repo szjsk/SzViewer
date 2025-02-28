@@ -37,10 +37,32 @@ QString FileUtils::MoveFile(QStringList &fileList, QString currentFile, int move
 
 }
 
-QStringList FileUtils::getFileList(QString currentFile) {
+QStringList FileUtils::getFileList(QString currentFile, SupportType type) {
+    qDebug() << "currentFile : " << currentFile;
 	QFileInfo fileInfo(currentFile);
 	QDir dir = fileInfo.dir();
 	QStringList fileList = dir.entryList(QDir::Files);
-	sortByWindow(fileList);
-	return fileList;
+    QStringList newFileBySupprot;
+	for (int i = 0; i < fileList.size(); i++) {
+		if (isSupportSuffix(dir.absoluteFilePath(fileList[i]), type)) {
+			newFileBySupprot.append(dir.absoluteFilePath(fileList[i]));
+		}
+	}
+	sortByWindow(newFileBySupprot);
+	return newFileBySupprot;
+}
+
+bool FileUtils::isSupportSuffix(QString currentFile, SupportType type) {
+    QFileInfo fileInfo(currentFile);
+
+    QString suffix = fileInfo.suffix().toLower();
+
+    if (type == SupportType::IMAGE && (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp")) {
+		return true;
+	}
+	else if (type == SupportType::TEXT && (suffix == "txt" || suffix == "ini")) {
+		return true;
+	}
+
+    return false;
 }

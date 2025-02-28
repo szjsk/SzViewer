@@ -22,7 +22,6 @@ StatusStore::~StatusStore()
 	saveSetting(&m_textSettingProps);
 	saveSetting(&m_imageSettingProps);
 	saveTextHistory(m_textHistory);
-	qDebug() << "save text history";
     saveImageHistory(m_imageHistory);
 }
 
@@ -56,7 +55,6 @@ void StatusStore::saveSetting(IJsonSerializable* jsonObj)
     QFile saveFile(jsonObj->getFileName());
 
     if (!saveFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-		qDebug() << "Couldn't open save file : " << jsonObj->getFileName();
         return;
     }
 

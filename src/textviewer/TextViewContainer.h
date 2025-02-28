@@ -30,7 +30,7 @@ public:
 
     TextViewContainer(QWidget* parent = nullptr);
     ~TextViewContainer();
-    void initTextFile(QString& filePath);
+    void initTextFile(QString filePath);
     bool changeSplitView();
 
 

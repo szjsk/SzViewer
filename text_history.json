@@ -1,37 +1,30 @@
 {
     "fileInfos": [
         {
-            "fileName": "C:/Users/szpc/Documents/그녀를 다시 잃지 않으려면.txt",
-            "isBookmarked": false,
-            "savedDateTime": 1740690143009,
-            "textLine": "",
-            "textPosition": 0
-        },
-        {
-            "fileName": "C:/Users/szpc/Documents/로잘린 보가트.txt",
-            "isBookmarked": false,
-            "savedDateTime": 1740690602047,
-            "textLine": "",
-            "textPosition": 0
-        },
-        {
-            "fileName": "C:/Users/szpc/Documents/녹음의 관.txt",
-            "isBookmarked": false,
+            "fileName": "C:/Users/szpc/Documents/까마귀는 반짝이는 것을 좋아해.txt",
+            "isBookmarked": true,
             "savedDateTime": 0,
             "textLine": "",
             "textPosition": 0
         },
         {
-            "fileName": "C:/Users/szpc/Documents/마지막 여행이 끝나면.txt",
+            "fileName": "Z:/document/정리/23세 유부남입니다/0003_23세 유부남입니다 〈 2화 〉유부남입니다.txt",
             "isBookmarked": false,
-            "savedDateTime": 1740690602219,
+            "savedDateTime": 1740736322782,
             "textLine": "",
-            "textPosition": -1
+            "textPosition": 0
         },
         {
-            "fileName": "C:/Users/szpc/Documents/남편이 마탑주였다.txt",
+            "fileName": "Z:/document/정리/23세 유부남입니다/0008_23세 유부남입니다 〈 7화 〉(막간)그때 성설아는.txt",
             "isBookmarked": false,
-            "savedDateTime": 0,
+            "savedDateTime": 1740736322450,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0004_23세 유부남입니다 〈 3화 〉유부남입니다.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322717,
             "textLine": "",
             "textPosition": 0
         },
@@ -43,16 +36,72 @@
             "textPosition": 0
         },
         {
-            "fileName": "C:/Users/szpc/Documents/그림자 없는 밤.txt",
+            "fileName": "Z:/document/정리/23세 유부남입니다/0009_23세 유부남입니다 〈 8화 〉(막간)그때 성설아는.txt",
             "isBookmarked": false,
-            "savedDateTime": 1740690154906,
+            "savedDateTime": 1740736322379,
             "textLine": "",
             "textPosition": 0
         },
         {
-            "fileName": "C:/Users/szpc/Documents/까마귀는 반짝이는 것을 좋아해.txt",
-            "isBookmarked": true,
-            "savedDateTime": 0,
+            "fileName": "Z:/document/정리/23세 유부남입니다/0006_23세 유부남입니다 〈 5화 〉유부남입니다.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322587,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0011_23세 유부남입니다 〈 10화 〉그녀를 길들일 첫 발을 내딛자.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322251,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0010_23세 유부남입니다 〈 9화 〉그녀를 길들일 첫 발을 내딛자..txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322317,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0005_23세 유부남입니다 〈 4화 〉유부남입니다.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322651,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/#파일머지/랜선조교기록.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736309231,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0012_23세 유부남입니다 〈 11화 〉그녀를 길들일 첫 발을 내딛자.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736321738,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0013_23세 유부남입니다 〈 12화 〉그녀를 길들일 첫 발을 내딛자.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736321255,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0007_23세 유부남입니다 〈 6화 〉유부남입니다.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322520,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
+            "fileName": "Z:/document/정리/23세 유부남입니다/0002_23세 유부남입니다 〈 1화 〉프롤로그.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740736322850,
             "textLine": "",
             "textPosition": 0
         }

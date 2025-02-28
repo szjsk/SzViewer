@@ -6,6 +6,7 @@
 #include "imageviewer/ImageViewContainer.h"
 #include "imageviewer/ImageToolbar.h"
 #include "common/HistoryCheckBoxItem.h"
+#include "common/FileUtils.h"
 
 #include <QStackedWidget>
 #include <QSettings>
@@ -276,8 +277,7 @@ void SzViewer::openFile(QString fileName) {
 		// 확장자 필터링
 		QStringList filteredFileNames;
 		for (const QString& name : fileNames) {
-			QString suffix = QFileInfo(name).suffix().toLower();
-			if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp" || suffix == "txt" || suffix == "ini") {
+			if (FileUtils::isSupportSuffix(name, FileUtils::IMAGE) || FileUtils::isSupportSuffix(name, FileUtils::TEXT)) {
 				filteredFileNames.append(name);
 			}
 		}
@@ -294,15 +294,14 @@ void SzViewer::openFile(QString fileName) {
 
 		fileInfo = QFileInfo(folder.absoluteFilePath(filteredFileNames[0]));
 	}
-	QString suffix = fileInfo.suffix().toLower();
 
-	if (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp") {
+	if (FileUtils::isSupportSuffix(fileName, FileUtils::IMAGE)) {
 		// 예: 이미지 파일을 처리하는 로직 추가
 		// 예를 들면 이미지 뷰어 위젯에 이미지를 표시하는 방식 등이 있을 수 있음.
 		changeVisible(true);
 		ui_imageViewContainer->loadFileList(fileName);
 	}
-	else if (suffix == "txt" || suffix == "ini") {
+	else if (FileUtils::isSupportSuffix(fileName, FileUtils::TEXT)) {
 		changeVisible(false);
 		ui_textViewContainer->initTextFile(fileName);
 	}
