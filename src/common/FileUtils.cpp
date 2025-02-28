@@ -56,7 +56,9 @@ bool FileUtils::isSupportSuffix(QString currentFile, SupportType type) {
 
     QString suffix = fileInfo.suffix().toLower();
 
-    if (type == SupportType::IMAGE && (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp")) {
+    if (type == SupportType::IMAGE && (suffix == "jpg" || suffix == "jpeg" || suffix == "png" || suffix == "bmp" || suffix == "gif" || suffix == "webp"
+		|| suffix == "tiff" || suffix == "tif" || suffix == "svg" || suffix == "icns" || suffix == "ico" || suffix == "tga" || suffix == "wbmp"
+		)) {
 		return true;
 	}
 	else if (type == SupportType::TEXT && (suffix == "txt" || suffix == "ini")) {
