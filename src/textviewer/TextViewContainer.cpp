@@ -317,7 +317,7 @@ void TextViewContainer::prevPage(const FileInfo* fileInfo) {
 
 bool TextViewContainer::changeSplitView() {
 
-	TextSettingProps setting = StatusStore::instance().getTextSettings();
+	TextSettingProps& setting = StatusStore::instance().getTextSettings();
 	bool newSplit = !setting.isSplitView();
 	setting.setSplitView(newSplit);
 	ui_TextBrowsers[1]->setVisible(newSplit);

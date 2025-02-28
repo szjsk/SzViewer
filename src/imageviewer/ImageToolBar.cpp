@@ -75,7 +75,7 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
 
     // 클릭 시 동작 정의
     connect(splitAction, &QAction::triggered, this, [this]() {
-        ImageSettingProps setting = StatusStore::instance().getImageSettings();
+        ImageSettingProps& setting = StatusStore::instance().getImageSettings();
         setting.setSplitView(m_imageViewContainer->changeSplitView());
         StatusStore::instance().saveImageSettings(setting);
         });

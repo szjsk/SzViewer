@@ -66,19 +66,21 @@ void StatusStore::saveSetting(IJsonSerializable* jsonObj)
 }
 
 
-TextSettingProps StatusStore::getTextSettings() {
+TextSettingProps& StatusStore::getTextSettings() {
 	return m_textSettingProps;
 }
 
 void StatusStore::saveTextSettings(TextSettingProps newSettings) {
+	m_textSettingProps = newSettings;
     saveSetting(&newSettings);
 }
 
-ImageSettingProps StatusStore::getImageSettings() {
+ImageSettingProps& StatusStore::getImageSettings() {
 	return m_imageSettingProps;
 }
 
 void StatusStore::saveImageSettings(ImageSettingProps newSettings) {
+	m_imageSettingProps = newSettings;
     saveSetting(&newSettings);
 }
 
@@ -86,7 +88,7 @@ HistoryProps& StatusStore::getTextHistory() {
 	return m_textHistory;
 }
 void StatusStore::saveTextHistory(HistoryProps newSettings) {
-    //m_textHistory = caclulateHistorySize(HistoryProps::SavedType::TEXT_HISTORY , newSettings.getFileInfos());
+	m_textHistory = newSettings;
     saveSetting(&newSettings);
 }
 
@@ -107,7 +109,7 @@ HistoryProps& StatusStore::getImageHistory() {
 	return m_imageHistory;
 }
 void StatusStore::saveImageHistory(HistoryProps newSettings) {
-   // m_imageHistory = caclulateHistorySize(HistoryProps::SavedType::IMAGE_HISTORY, newSettings.getFileInfos());
+    m_imageHistory = newSettings;
     saveSetting(&newSettings);
 }
 

@@ -20,10 +20,10 @@ public:
 
 
 
-    TextSettingProps getTextSettings();
+    TextSettingProps& getTextSettings();
     void saveTextSettings(TextSettingProps settings);
 
-    ImageSettingProps getImageSettings();
+    ImageSettingProps& getImageSettings();
     void saveImageSettings(ImageSettingProps newSettings);
 
     HistoryProps& getTextHistory();
