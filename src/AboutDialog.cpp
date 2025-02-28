@@ -31,6 +31,9 @@ AboutDialog::AboutDialog(QWidget* parent)
         5 : 이미지가 화면보다 클때 맞춤<br>
         + : 확대<br>
         - : 축소<br>
+        F2 : 파일 이름 변경<br>
+        F3 : 분할 보기 파일 이름 변경<br>
+        CTRL + F2 : 폴더 이름 변경<br>
         *.jpg *.jpeg *.png *.bmp *.gif *.webp *.ico *.svg 등을 지원합니다.<br>
         webp는 지원예정입니다.<br>
         </p>

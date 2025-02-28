@@ -13,6 +13,8 @@
 #include <QDir>
 #include <QCollator>
 #include <QMessageBox>
+#include <QInputDialog>
+
 #include "ImageView.h"
 #include "ImageSettingProps.h"
 #include "../common/StatusStore.h"
@@ -43,6 +45,8 @@ signals:
 private:
 	QHBoxLayout* createSlider();
 	void sizeChange(ImageView::ScaleMode mode, int percentage);
+	QStringList renameFile(QStringList fileList, int fileIdx, int containerIdx);
+	QString renameFolder(QStringList fileList, int fileIdx);
 
 private: //variable
 	static constexpr int M_IMAGE_BROWSER_CNT = 2;

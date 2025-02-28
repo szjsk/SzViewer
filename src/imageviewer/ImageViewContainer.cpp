@@ -233,9 +233,23 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
         }
         else if ((keyEvent->key() == Qt::Key_Minus) && m_percentage > 10) {
             sizeChange(ImageView::ScaleMode::ScaleByPercentage, m_percentage - 10);
-        }else if (keyEvent->key() == Qt::Key_Delete && !m_fileList.isEmpty() && m_currentIndex < m_fileList.size() && m_currentIndex >= 0) {
+        }
+        else if (keyEvent->key() == Qt::Key_Delete && !m_fileList.isEmpty() && m_currentIndex < m_fileList.size() && m_currentIndex >= 0) {
             deleteImageFile();
         }
+        else if (keyEvent->key() == Qt::Key_F2 && !(keyEvent->modifiers() & Qt::ControlModifier)) {
+            m_fileList = renameFile(m_fileList , m_currentIndex , 0);
+        }
+        else if (keyEvent->key() == Qt::Key_F3 && StatusStore::instance().getImageSettings().isSplitView()) {
+            m_fileList = renameFile(m_fileList, m_currentIndex+1, 1);
+		}
+		else if (keyEvent->key() == Qt::Key_F2 && keyEvent->modifiers() & Qt::ControlModifier) {
+            QString newPath = renameFolder(m_fileList, m_currentIndex);
+			if (newPath.isEmpty() == false)
+			{
+				loadFileList(newPath);
+			}
+		}
         return false;  // 이벤트를 가로채서 처리 완료
     }
 
@@ -255,6 +269,65 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
     }
 
     return QWidget::eventFilter(watched, event);
+}
+
+QStringList ImageViewContainer::renameFile(QStringList fileList, int fileIdx, int containerIdx) {
+    if (fileList.isEmpty() || fileIdx >= fileList.size()) {
+        return fileList;
+    }
+
+    QString currentFile = fileList.at(fileIdx);
+    QFileInfo fileInfo(currentFile);
+    QString oldFileName = fileInfo.completeBaseName();
+    QString suffix = fileInfo.suffix();
+
+    bool ok;
+    QString newFileName = QInputDialog::getText(this, "rename file", "please new file name:", QLineEdit::Normal, oldFileName, &ok);
+
+    if (ok && !newFileName.isEmpty()) {
+		ui_imageView[containerIdx]->movieStop();
+        QDir dir = fileInfo.dir();
+        QString newPath = dir.filePath(newFileName + "." + suffix);
+
+        if (QFile::rename(currentFile, newPath)) {
+            // 파일명 변경 성공
+            ui_imageView[containerIdx]->loadImage(newPath);
+            fileList[fileIdx] = newPath;
+            return fileList;
+        }
+        else {
+            QMessageBox::warning(this, "warning", "can not rename.");
+        }
+    }
+    return fileList;
+}
+
+QString ImageViewContainer::renameFolder(QStringList fileList, int fileIdx) {
+    if (fileList.isEmpty() || fileIdx >= fileList.size()) {
+        return QString();
+    }
+
+    QString currentFile = fileList.at(fileIdx);
+    QFileInfo fileInfo(currentFile);
+    QDir dir = fileInfo.dir();
+    QString oldFolderName = dir.dirName();
+    dir.cdUp();
+    QString parentPath = dir.absolutePath();
+
+    bool ok;
+    QString newFolderName = QInputDialog::getText(this, "rename folder", "please new folder name:", QLineEdit::Normal, oldFolderName, &ok);
+
+    if (ok && !newFolderName.isEmpty()) {
+        QString o = QDir::cleanPath(parentPath + QDir::separator() + oldFolderName);
+        QString n = QDir::cleanPath(parentPath + QDir::separator() + newFolderName);
+        if (fileInfo.dir().rename(o, n)) {
+            return QDir::cleanPath(parentPath + QDir::separator() + newFolderName + QDir::separator() + fileInfo.fileName());
+        }
+        else {
+            QMessageBox::warning(this, "warning", "can not rename.");
+        }
+    }
+    return QString();
 }
 
 void ImageViewContainer::deleteImageFile() {

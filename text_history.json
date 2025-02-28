@@ -1,6 +1,13 @@
 {
     "fileInfos": [
         {
+            "fileName": "C:/Users/szpc/Documents/남편이 마탑주였다.txt",
+            "isBookmarked": false,
+            "savedDateTime": 1740755044820,
+            "textLine": "",
+            "textPosition": 0
+        },
+        {
             "fileName": "C:/Users/szpc/Documents/나작소 작가에게 감금당했다.txt",
             "isBookmarked": false,
             "savedDateTime": 1740755041216,
@@ -13,13 +20,6 @@
             "savedDateTime": 1740755039005,
             "textLine": "",
             "textPosition": 5717
-        },
-        {
-            "fileName": "C:/Users/szpc/Documents/남편이 마탑주였다.txt",
-            "isBookmarked": false,
-            "savedDateTime": 1740755044820,
-            "textLine": "",
-            "textPosition": 0
         }
     ],
     "savedType": 0
