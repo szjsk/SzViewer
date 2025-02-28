@@ -18,7 +18,9 @@ public:
 		FitToWindow,
 		FitToWidth,
 		FitToHeight,
-		ScaleByPercentage
+		ScaleByPercentage,
+		FitIfLARGE
+
 	};
 
 	enum MoveMode {

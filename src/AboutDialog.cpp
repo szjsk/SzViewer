@@ -6,7 +6,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 {
 	setWindowTitle("About");
 	setFixedSize(400, 500);
-
+    //f:\qt\6.8.2\msvc2022_64\bin\windeployqt6.exe
     const QString titleText = R"(
        <h2>SzViewer</h2>
     )";
@@ -28,8 +28,9 @@ AboutDialog::AboutDialog(QWidget* parent)
         2 : 원본 크기<br>
         3 : 가로 맞춤<br>
         4 : 세로 맞춤<br>
-        5,+ : 확대<br>
-        6,- : 축소<br>
+        5 : 이미지가 화면보다 클때 맞춤<br>
+        + : 확대<br>
+        - : 축소<br>
         *.jpg *.jpeg *.png *.bmp *.gif *.webp *.ico *.svg 등을 지원합니다.<br>
         webp는 지원예정입니다.<br>
         </p>

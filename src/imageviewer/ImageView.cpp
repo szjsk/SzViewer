@@ -113,11 +113,21 @@ QMovie* ImageView::getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mo
             movie->setScaledSize(newSize);
             break;
         }case ScaleByPercentage: {
-            QSize newSize(movie->currentPixmap().width() * percentage / 100, movie->currentPixmap().height() * percentage / 100);
+            QSize newSize(originSize.width() * percentage / 100, originSize.height() * percentage / 100);
             movie->setScaledSize(newSize);
             break;
         }case ORIGINAL: {
             movie->setScaledSize(originSize);
+            break;
+        }case FitIfLARGE: {
+            if (originSize.width() > this->size().width() || originSize.height() > this->size().height()) {
+                QSize containerSize = this->size();
+                QSize scaledSize = originSize.scaled(containerSize, Qt::KeepAspectRatio);
+                movie->setScaledSize(scaledSize);
+            }
+            else {
+                movie->setScaledSize(originSize);
+            }
             break;
         }
     }
@@ -138,7 +148,12 @@ QPixmap ImageView::getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode 
         return pixmap->scaled(pixmap->size().width() * percentage / 100, pixmap->size().height() * percentage / 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     case ORIGINAL:
         return pixmap->scaled(originSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    default:
+    case FitIfLARGE: {
+        if (originSize.width() > this->size().width() || originSize.height() > this->size().height()) {
+            return pixmap->scaled(this->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+		}
+		return pixmap->scaled(originSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    }default:
         return *pixmap;
     }
 }

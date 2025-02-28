@@ -224,11 +224,14 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
         }
         else if (keyEvent->key() == Qt::Key_4) {
             sizeChange(ImageView::ScaleMode::FitToHeight, 100);
-        }
-        else if ((keyEvent->key() == Qt::Key_Plus || keyEvent->key() == Qt::Key_5) && m_percentage < 1000) {
+		}
+		else if (keyEvent->key() == Qt::Key_5) {
+			sizeChange(ImageView::ScaleMode::FitIfLARGE, 100);
+		}
+        else if ((keyEvent->key() == Qt::Key_Plus) && m_percentage < 1000) {
             sizeChange(ImageView::ScaleMode::ScaleByPercentage, m_percentage + 10);
         }
-        else if ((keyEvent->key() == Qt::Key_Minus || keyEvent->key() == Qt::Key_6) && m_percentage > 10) {
+        else if ((keyEvent->key() == Qt::Key_Minus) && m_percentage > 10) {
             sizeChange(ImageView::ScaleMode::ScaleByPercentage, m_percentage - 10);
         }else if (keyEvent->key() == Qt::Key_Delete && !m_fileList.isEmpty() && m_currentIndex < m_fileList.size() && m_currentIndex >= 0) {
             deleteImageFile();
