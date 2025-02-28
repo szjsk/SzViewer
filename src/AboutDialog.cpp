@@ -30,7 +30,7 @@ AboutDialog::AboutDialog(QWidget* parent)
         4 : 세로 맞춤<br>
         5,+ : 확대<br>
         6,- : 축소<br>
-        *.jpg *.jpeg *.png *.bmp *.gif 만 지원합니다.<br>
+        *.jpg *.jpeg *.png *.bmp *.gif *.webp *.ico *.svg 등을 지원합니다.<br>
         webp는 지원예정입니다.<br>
         </p>
     )";
@@ -39,7 +39,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     const QString aboutText = R"(
         <p><b>작성자</b> : 황재식<br>
         <b>이메일</b> : <a href="mailto:sizz.js@gmail.com">sizz.js@gmail.com</a></p>
-        <b>버전</b> : 0.1.1 (2025.02.28)</p>
+        <b>버전</b> : 0.1.2 (2025.03.01)</p>
     )";
 
 
