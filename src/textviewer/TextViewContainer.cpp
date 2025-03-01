@@ -68,8 +68,6 @@ QTextBrowser* TextViewContainer::createTextBrowser(TextSettingProps settings) {
 }
 
 void TextViewContainer::initTextFile(QString filePath) {
-	qDebug() << "filePath: " << filePath;
-
 	QFile file(filePath);
 	if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
 		qDebug() << "파일을 열 수 없습니다.";
@@ -103,6 +101,7 @@ void TextViewContainer::refreshPage(long textPosition) {
 	}
 	m_fileInfo.currentPageIdx = currentPage;
 	ui_QSlider->setRange(0, m_fileInfo.pageInfos.size() - 1);
+	ui_QSlider->setValue(0);
 
 	if (currentPage == 0) {
 		int newVal = setPage(&m_fileInfo, currentPage);

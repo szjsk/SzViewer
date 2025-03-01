@@ -23,7 +23,6 @@ ImageViewContainer::ImageViewContainer(QWidget* parent)
     ui_imageView[1]->setVisible(StatusStore::instance().getImageSettings().isSplitView());
 
     vBoxContainer->addLayout(hBoxBrowser, 1);
-
     //for slider
     vBoxContainer->addLayout(createSlider());
     setLayout(vBoxContainer);
@@ -201,6 +200,25 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
 
 }
 
+void ImageViewContainer::toggleFullScreen() {
+    QMainWindow* mainWindow = qobject_cast<QMainWindow*>(window());
+
+    if (mainWindow->isFullScreen()) {
+        mainWindow->showNormal();
+        ui_qSlider->show();
+        ui_qSliderInfo->show();
+        mainWindow->menuWidget()->show();
+        resizeImage(m_scaleMode, m_percentage);
+    }
+    else {
+        ui_qSlider->hide();
+        ui_qSliderInfo->hide();
+        mainWindow->menuWidget()->hide();
+        mainWindow->showFullScreen();
+        resizeImage(m_scaleMode, m_percentage);
+    }
+}
+
 bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
 
     if (this->isVisible() == false) {
@@ -209,7 +227,10 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
 
     if (event->type() == QEvent::KeyRelease) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_PageDown) {
+        if (keyEvent->key() == Qt::Key_F) { 
+			toggleFullScreen();
+        }
+        else if (keyEvent->key() == Qt::Key_PageDown) {
 			navigateToFolder(ImageView::MoveMode::NextFolder);
         }
         else if (keyEvent->key() == Qt::Key_PageUp) {

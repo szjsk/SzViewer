@@ -7,10 +7,7 @@ AboutDialog::AboutDialog(QWidget* parent)
 	setWindowTitle("About");
 	setFixedSize(400, 500);
     //f:\qt\6.8.2\msvc2022_64\bin\windeployqt6.exe
-    // - 문서파일에서 1페이지 이후 이동후 다음 이전 파일 이동시 새로고침 안되는문제
-    // - 문서파일 11페이지에서 이전가기했을때 오류.
     // - 이미지 단축키 설정 추가
-    // - 파일 이동시 자동 다음 폴더 이동 여부 설정 추가 
     // - 파일 그룹화 기능 추가 (파일 삭제, 일괄 이름 변경을 위한 그룹)
     // - 압축파일 지원(리팩토링 추가)
     // - 이미지 뷰어 fitwindow 시 두개 뷰어 왼쪽 오른쪽 정렬 추가.

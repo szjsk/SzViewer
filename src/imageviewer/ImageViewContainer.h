@@ -14,7 +14,8 @@
 #include <QCollator>
 #include <QMessageBox>
 #include <QInputDialog>
-
+#include <QApplication>
+#include <QMainWindow>
 #include "ImageView.h"
 #include "ImageSettingProps.h"
 #include "../common/StatusStore.h"
@@ -47,6 +48,7 @@ private:
 	void sizeChange(ImageView::ScaleMode mode, int percentage);
 	QStringList renameFile(QStringList fileList, int fileIdx, int containerIdx);
 	QString renameFolder(QStringList fileList, int fileIdx);
+	void toggleFullScreen();
 
 private: //variable
 	static constexpr int M_IMAGE_BROWSER_CNT = 2;
