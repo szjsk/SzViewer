@@ -101,7 +101,7 @@ QToolBar* SzViewer::CommonLeft() {
 
 	connect(fileMenu, &QMenu::aboutToShow, [this, fileMenu]() {
 		addQActionInFileMenu(fileMenu);
-	});
+		});
 
 	fileToolButton->setMenu(fileMenu);
 	toolBar->addWidget(fileToolButton);
@@ -145,13 +145,13 @@ void SzViewer::addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryPr
 		connect(checkBox, &HistoryCheckBoxItem::indicatorClicked, [this, fileName, saveFileInfo, type](bool checked) {
 			qDebug() << "체크박스 인디케이터 클릭:" << fileName << checked;
 			StatusStore::instance().savedFixedState(type, fileName, checked);
-		});
+			});
 
 		connect(checkBox, &HistoryCheckBoxItem::labelClicked, [this, fileName, fileMenu]() {
 			qDebug() << "라벨 클릭:" << fileName;
 			openFile(fileName);
 			fileMenu->close();  // 팝업 닫기
-		});
+			});
 	}
 
 }
@@ -232,61 +232,23 @@ void SzViewer::dropEvent(QDropEvent* event)
 		return;
 	}
 
-	QString fileName = urls.first().toLocalFile();
-	QFileInfo fileInfo(fileName);
-
-	if (fileInfo.isDir()) {
-		QDir dir(fileName);
-		QStringList fileList = dir.entryList(QDir::Files, QDir::Name);
-		if (fileList.isEmpty()) {
-			return;
-		}
-		fileName = dir.absoluteFilePath(fileList.first());
-		openFile(fileName);
-	}
-	else {
-		openFile(fileName);
-	}
-
+	openFile(urls.first().toLocalFile());
 }
 
 void SzViewer::openFile(QString fileName) {
-	QFileInfo fileInfo(fileName);
-	if (fileInfo.isDir()) {
-		QDir folder(fileName);
-		QStringList fileNames = folder.entryList(QDir::Files, QDir::Name);
-		// 확장자 필터링
-		QStringList filteredFileNames;
-		for (const QString& name : fileNames) {
-			if (FileUtils::isSupportSuffix(name, FileUtils::IMAGE) || FileUtils::isSupportSuffix(name, FileUtils::TEXT)) {
-				filteredFileNames.append(name);
-			}
-		}
-		QCollator collator;
-		collator.setNumericMode(true);
-		std::sort(filteredFileNames.begin(), filteredFileNames.end(),
-			[&collator](const QString& s1, const QString& s2) {
-				return collator.compare(s1, s2) < 0;
-			});
+	QString findFileName = FileUtils::findFileInSubDir(fileName);
 
-		if (filteredFileNames.isEmpty()) {
-			return;
-		}
-
-		fileInfo = QFileInfo(folder.absoluteFilePath(filteredFileNames[0]));
-	}
-
-	if (FileUtils::isSupportSuffix(fileName, FileUtils::IMAGE)) {
+	if (FileUtils::isSupportSuffix(findFileName, FileUtils::IMAGE)) {
 		// 예: 이미지 파일을 처리하는 로직 추가
 		// 예를 들면 이미지 뷰어 위젯에 이미지를 표시하는 방식 등이 있을 수 있음.
 		changeVisible(true);
-		ui_imageViewContainer->loadFileList(fileName);
+		ui_imageViewContainer->loadFileList(findFileName);
 	}
-	else if (FileUtils::isSupportSuffix(fileName, FileUtils::TEXT)) {
+	else if (FileUtils::isSupportSuffix(findFileName, FileUtils::TEXT)) {
 		changeVisible(false);
-		ui_textViewContainer->initTextFile(fileName);
+		ui_textViewContainer->initTextFile(findFileName);
 	}
 	else {
-		QMessageBox::warning(this, "경고", "지원하는 이미지/텍스트 파일이 아닙니다.");
+		QMessageBox::warning(this, "warning", "can not support image/text file. " + fileName);
 	}
 }

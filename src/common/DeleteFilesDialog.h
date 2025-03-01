@@ -10,15 +10,8 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include "FileUtils.h"
 
-#ifdef Q_OS_WIN
-#include <windows.h>
-#include <shlobj.h>
-#endif
-
-#ifdef Q_OS_MAC
-#import <Foundation/Foundation.h>
-#endif
 
 class DeleteFilesDialog : public QDialog {
     Q_OBJECT
@@ -36,8 +29,7 @@ private: //variable
 
 private: //method
     void deleteFileOrFolder();
-    void moveToTrash(const QString& filePath);
-    void moveFolderToTrash(const QString& folderPath);
+
 };
 
 #endif // DELETEFILESDIALOG_H

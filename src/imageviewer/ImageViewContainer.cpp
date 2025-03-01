@@ -33,7 +33,7 @@ ImageViewContainer::ImageViewContainer(QWidget* parent)
     connect(ui_qSlider, &QSlider::valueChanged, this, [this](int value) {
         m_currentIndex = value;
         navigateToFile(ImageView::None);
-        ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex).arg(ui_qSlider->maximum()));
+        ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(ui_qSlider->maximum()+1));
         });
 
 }
@@ -74,7 +74,7 @@ void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
     }
 
     if (file.isEmpty()) {
-        QMessageBox::warning(this, "경고", "이미지가 존재하는 다음/이전폴더가 없습니다.");
+        QMessageBox::warning(this, "warning", "can not find next/prev image folder.");
         return;
     }
 
@@ -95,7 +95,7 @@ void ImageViewContainer::loadFileList(QString filePath) {
 	m_currentIndex = m_currentIndex < 0 ? 0 : m_currentIndex;
     navigateToFile(ImageView::None);
 
-    ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex).arg(ui_qSlider->maximum()));
+    ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_currentIndex+1).arg(ui_qSlider->maximum()+1));
 
 
     this->window()->activateWindow();

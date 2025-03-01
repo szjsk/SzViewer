@@ -61,7 +61,7 @@ bool FileUtils::isSupportSuffix(QString currentFile, SupportType type) {
 		)) {
 		return true;
 	}
-	else if (type == SupportType::TEXT && (suffix == "txt" || suffix == "ini")) {
+	else if (type == SupportType::TEXT && (suffix == "txt")) {
 		return true;
 	}
 
@@ -69,11 +69,45 @@ bool FileUtils::isSupportSuffix(QString currentFile, SupportType type) {
 }
 
 
-QString FileUtils::moveFolder(QString fileName, MoveMode moveMode, SupportType type) {
+QString FileUtils::findFileInSubDir(QString fileName) {
+    QFileInfo fileInfo(fileName);
 
+    if (!fileInfo.isDir()) {
+		return fileName;
+    }
+
+    QDir folder(fileName);
+    QStringList fileNames = folder.entryList(QDir::Files, QDir::Name);
+    // 확장자 필터링
+    QStringList filteredFileNames;
+    for (const QString& name : fileNames) {
+        if (FileUtils::isSupportSuffix(name, FileUtils::IMAGE) || FileUtils::isSupportSuffix(name, FileUtils::TEXT)) {
+            filteredFileNames.append(name);
+        }
+    }
+
+    if (filteredFileNames.isEmpty()) {
+        QStringList folderNames = folder.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        if (folderNames.isEmpty()) {
+            return QString();
+        }
+
+        FileUtils::sortByWindow(folderNames);
+
+        return findFileInSubDir(folder.absoluteFilePath(folderNames[0]));
+    }
+
+    FileUtils::sortByWindow(filteredFileNames);
+
+    return folder.absoluteFilePath(filteredFileNames[0]);
+
+}
+
+QString FileUtils::moveFolder(QString fileName, MoveMode moveMode, SupportType type) {
+    
     // 현재 파일이 속한 폴더
     QFileInfo currentFileInfo(fileName);
-    QDir currentFolder = currentFileInfo.dir();
+    QDir currentFolder = currentFileInfo.isDir()? QDir(fileName) : currentFileInfo.dir();
 
     // 부모 폴더로 이동
     QDir parentDir = currentFolder;
@@ -116,17 +150,82 @@ QString FileUtils::moveFolder(QString fileName, MoveMode moveMode, SupportType t
 
     QStringList fileNames = nextFolder.entryList(QDir::Files, QDir::Name);
 
-    QStringList newFileBySupprot;
+    QStringList newFilePaths;
     for (int i = 0; i < fileNames.size(); i++) {
         if (isSupportSuffix(nextFolder.absoluteFilePath(fileNames[i]), type)) {
-            newFileBySupprot.append(nextFolder.absoluteFilePath(fileNames[i]));
+            newFilePaths.append(nextFolder.absoluteFilePath(fileNames[i]));
         }
     }
-    sortByWindow(newFileBySupprot);
+    sortByWindow(newFilePaths);
 
-    if (!newFileBySupprot.isEmpty()) {
+    if (!newFilePaths.isEmpty()) {
         QString file = nextFolder.absoluteFilePath(fileNames[0]);
         return file;
-    }
+	}
+	else {
+        return moveFolder(nextFolder.absolutePath(), moveMode, type);
+	}
     return QString();
+}
+
+
+
+void FileUtils::moveToTrash(QString filePath) {
+#ifdef Q_OS_WIN
+    // Windows에서 파일을 휴지통으로 이동
+    QString nativeFilePath = QDir::toNativeSeparators(filePath);
+    wchar_t* file = new wchar_t[nativeFilePath.length() + 2];
+    nativeFilePath.toWCharArray(file);
+    file[nativeFilePath.length()] = 0;
+    file[nativeFilePath.length() + 1] = 0;
+
+    SHFILEOPSTRUCT fileOp;
+    memset(&fileOp, 0, sizeof(SHFILEOPSTRUCT));
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = file;
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
+
+    SHFileOperation(&fileOp);
+
+    delete[] file;
+#elif defined(Q_OS_MAC)
+    // macOS에서 파일을 휴지통으로 이동
+    NSString* nsFilePath = [NSString stringWithUTF8String : filePath.toUtf8().constData()];
+    NSURL* fileURL = [NSURL fileURLWithPath : nsFilePath];
+    [[NSFileManager defaultManager]trashItemAtURL:fileURL resultingItemURL : nil error : nil];
+#else
+    // 기타 플랫폼에서는 파일을 삭제
+    QFile::remove(filePath);
+#endif
+}
+
+void FileUtils::moveFolderToTrash(QString folderPath) {
+#ifdef Q_OS_WIN
+    // Windows에서는 폴더 전체를 한번에 휴지통으로 이동
+    QString nativeFilePath = QDir::toNativeSeparators(folderPath);
+    wchar_t* folder = new wchar_t[nativeFilePath.length() + 2];
+    nativeFilePath.toWCharArray(folder);
+    folder[nativeFilePath.length()] = 0;
+    folder[nativeFilePath.length() + 1] = 0;
+
+    SHFILEOPSTRUCT fileOp;
+    memset(&fileOp, 0, sizeof(SHFILEOPSTRUCT));
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = folder;
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT;
+
+    SHFileOperation(&fileOp);
+    delete[] folder;
+
+#elif defined(Q_OS_MAC)
+    // macOS에서는 폴더 전체를 한번에 휴지통으로 이동
+    NSString* nsFolderPath = [NSString stringWithUTF8String : folderPath.toUtf8().constData()];
+    NSURL* folderURL = [NSURL fileURLWithPath : nsFolderPath];
+    [[NSFileManager defaultManager]trashItemAtURL:folderURL resultingItemURL : nil error : nil];
+
+#else
+    // 기타 플랫폼
+    QDir dir(folderPath);
+    dir.removeRecursively();
+#endif
 }

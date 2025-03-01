@@ -51,61 +51,13 @@ void DeleteFilesDialog::deleteFileOrFolder() {
     QStringList selectedFiles = getSelectedFiles();
     if (isDeleteFolderChecked()) {
         QString folderPath = QFileInfo(m_fileListWidget->item(0)->text()).absolutePath();
-        moveFolderToTrash(folderPath);
+        FileUtils::moveFolderToTrash(folderPath);
 
     } else {
         for (const QString& file : selectedFiles) {
-            moveToTrash(file);
+            FileUtils::moveToTrash(file);
         }
     }
 
 	accept();
-}
-
-
-void DeleteFilesDialog::moveToTrash(const QString& filePath) {
-#ifdef Q_OS_WIN
-    // Windows에서 파일을 휴지통으로 이동
-    QString nativeFilePath = QDir::toNativeSeparators(filePath);
-    wchar_t* file = new wchar_t[nativeFilePath.length() + 2];
-    nativeFilePath.toWCharArray(file);
-    file[nativeFilePath.length()] = 0;
-    file[nativeFilePath.length() + 1] = 0;
-
-    SHFILEOPSTRUCT fileOp;
-    memset(&fileOp, 0, sizeof(SHFILEOPSTRUCT));
-    fileOp.wFunc = FO_DELETE;
-    fileOp.pFrom = file;
-    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION;
-
-    SHFileOperation(&fileOp);
-
-    delete[] file;
-#elif defined(Q_OS_MAC)
-    // macOS에서 파일을 휴지통으로 이동
-    NSString* nsFilePath = [NSString stringWithUTF8String : filePath.toUtf8().constData()];
-    NSURL* fileURL = [NSURL fileURLWithPath : nsFilePath];
-    [[NSFileManager defaultManager]trashItemAtURL:fileURL resultingItemURL : nil error : nil];
-#else
-    // 기타 플랫폼에서는 파일을 삭제
-    QFile::remove(filePath);
-#endif
-}
-
-void DeleteFilesDialog::moveFolderToTrash(const QString& folderPath) {
-    QDir dir(folderPath);
-    QFileInfoList fileList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
-
-    // 폴더 내의 모든 파일과 폴더를 휴지통으로 이동
-    for (const QFileInfo& fileInfo : fileList) {
-        if (fileInfo.isDir()) {
-            moveFolderToTrash(fileInfo.absoluteFilePath());
-        }
-        else {
-            moveToTrash(fileInfo.absoluteFilePath());
-        }
-    }
-
-    // 폴더 자체를 휴지통으로 이동
-    moveToTrash(folderPath);
 }
