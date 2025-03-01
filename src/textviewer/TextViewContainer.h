@@ -69,7 +69,7 @@ private:
     int getMaxWidth(QTextBrowser* tb);
 
     int getFontWidth(QFontMetrics* tb, QChar c);
-    void setPage(FileInfo* fileInfo, int newPageIdx);
+    int setPage(FileInfo* fileInfo, int newPageIdx);
     void refreshStyle(TextSettingProps settings, QTextBrowser* tb);
     void applyLineSpacing(QTextBrowser* tb);
     void nextPage(const FileInfo* fileInfo);

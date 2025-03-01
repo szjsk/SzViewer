@@ -155,9 +155,17 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
     // moveMode가 None인 경우 m_currentIndex는 그대로 사용
 
     // 범위 보정
-    if (currentIndex < 0 || currentIndex >= m_fileList.size()) {
+    if (currentIndex < 0 && StatusStore::instance().getImageSettings().isAutoNext()) {
+		navigateToFolder(ImageView::MoveMode::PrevFolder);
+        return;
+	}
+	else if (currentIndex >= m_fileList.size() && StatusStore::instance().getImageSettings().isAutoNext()) {
+		navigateToFolder(ImageView::MoveMode::NextFolder);
+		return;
+	}else if (currentIndex < 0 || currentIndex >= m_fileList.size()) {
         return;
     }
+
     QString fileName0;
     QString fileName1;
     // 분할 모드인 경우

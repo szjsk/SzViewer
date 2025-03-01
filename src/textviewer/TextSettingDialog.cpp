@@ -1,8 +1,5 @@
 ﻿#include "TextSettingDialog.h"
 
-
-
-
 TextSettingDialog::TextSettingDialog(TextSettingProps settings, QWidget* parent)
     : QDialog(parent), m_settings(settings)
 {

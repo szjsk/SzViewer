@@ -12,7 +12,8 @@ class ImageSettingProps : public IJsonSerializable
 public:
     ImageSettingProps();
     ImageSettingProps(bool splitView,
-                 int scaleMode);
+                 int scaleMode, 
+                 bool isAuoNext);
 
     // getter, setter
     bool isSplitView() const;
@@ -21,6 +22,8 @@ public:
     int getScaleMode() const;
     void setScaleMode(int value);
 
+	bool isAutoNext() const;
+	void setAutoNext(bool value);
 
     // JSON 직렬화/역직렬화 메서드
     QJsonObject toJson() const override;
@@ -28,8 +31,10 @@ public:
 	QString getFileName() override;
 
 private:
-    bool splitView;
-    int scaleMode;
+    bool m_splitView;
+    int m_scaleMode;
+    bool m_autoNext;
+
 };
 
 #endif // IMAGESETTINGPROPS_H

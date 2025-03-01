@@ -17,7 +17,8 @@ public:
                  const QColor &textColor,
                  const QColor &backgroundColor,
                  const QMargins &padding,
-                 double lineSpacing);
+                 double lineSpacing,
+                 bool isAuoNext);
 
     // getter, setter
     bool isSplitView() const;
@@ -46,6 +47,9 @@ public:
     void fromJson(const QJsonObject &json) override;
 	QString getFileName() override;
 
+    bool isAutoNext() const;
+    void setAutoNext(bool value);
+
 	//variable
 private:
     bool m_splitView;
@@ -55,6 +59,8 @@ private:
     QColor m_backgroundColor;
     QMargins m_padding;
     double m_lineSpacing;
+    bool m_autoNext = true;
+
 };
 
 #endif // TEXTSETTINGS_H

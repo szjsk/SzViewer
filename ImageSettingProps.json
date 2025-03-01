@@ -1,4 +1,5 @@
 {
+    "autoNext": true,
     "scaleMode": 1,
-    "splitView": false
+    "splitView": true
 }

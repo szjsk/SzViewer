@@ -35,8 +35,8 @@ TextViewContainer::TextViewContainer(QWidget* parent)
 
 	// 슬라이더 값 변경 시 정보를 업데이트하는 람다 슬롯 연결
 	connect(ui_QSlider, &QSlider::valueChanged, this, [this](int value) {
-		setPage(&m_fileInfo, value);
-		ui_QSliderInfo->setText(QString("page: %1 / %2").arg(value).arg(ui_QSlider->maximum()));
+		int newVal = setPage(&m_fileInfo, value);
+		ui_QSliderInfo->setText(QString("page: %1 / %2").arg(newVal).arg(ui_QSlider->maximum()));
 		});
 
 }
@@ -105,8 +105,8 @@ void TextViewContainer::refreshPage(long textPosition) {
 	ui_QSlider->setRange(0, m_fileInfo.pageInfos.size() - 1);
 
 	if (currentPage == 0) {
-		setPage(&m_fileInfo, currentPage);
-		ui_QSliderInfo->setText(QString("page: %1 / %2").arg(currentPage).arg(ui_QSlider->maximum()));
+		int newVal = setPage(&m_fileInfo, currentPage);
+		ui_QSliderInfo->setText(QString("page: %1 / %2").arg(newVal).arg(ui_QSlider->maximum()));
 	}
 	else {
 		ui_QSlider->setValue(currentPage);
@@ -162,7 +162,7 @@ void TextViewContainer::refreshStyle(TextSettingProps settings, QTextBrowser* tb
 	f.setHintingPreference(QFont::PreferFullHinting);
 	f.setStyleStrategy(QFont::PreferAntialias);
 	tb->setFont(f);
-	
+
 	QFontMetrics fm(settings.getFont());
 	int lineHeight = fm.lineSpacing();
 
@@ -263,32 +263,38 @@ void TextViewContainer::deleteFile(const FileInfo* fileInfo) {
 
 void TextViewContainer::nextPage(const FileInfo* fileInfo) {
 	int nextPosition = fileInfo->currentPageIdx;
+	bool isSplitView = StatusStore::instance().getTextSettings().isSplitView();
 
-	for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
-		if (ui_TextBrowsers[i]->isVisible() && nextPosition + 1 < fileInfo->pageInfos.size()) {
-			nextPosition++;
+	int increment = isSplitView ? 2 : 1;
+	nextPosition += increment;
+
+	if (nextPosition >= fileInfo->pageInfos.size()) {
+		if (StatusStore::instance().getTextSettings().isAutoNext()) {
+			initTextFile(m_fileInfo.nextFile);
+			return;
 		}
+		return;
 	}
 
 	ui_QSlider->setValue(nextPosition);
-
 }
 
 void TextViewContainer::prevPage(const FileInfo* fileInfo) {
 	int prevPosition = fileInfo->currentPageIdx;
+	bool isSplitView = StatusStore::instance().getTextSettings().isSplitView();
 
-	for (int i = 0; i < M_TEXT_BROWSER_CNT; i++) {
-		if (ui_TextBrowsers[i]->isVisible() && prevPosition - i > -1) {
-			prevPosition--;
-		}
+	int increment = isSplitView ? 2 : 1;
+	prevPosition -= increment;
+
+	if (prevPosition < 0 && StatusStore::instance().getTextSettings().isAutoNext()) {
+		initTextFile(m_fileInfo.prevFile);
+		return;
 	}
-
-	if (prevPosition < 0) {
+	else if (prevPosition < 0) {
 		prevPosition = 0;
 	}
 
 	ui_QSlider->setValue(prevPosition);
-
 }
 
 bool TextViewContainer::changeSplitView() {
@@ -305,9 +311,14 @@ bool TextViewContainer::changeSplitView() {
 	page calculation logic
 */
 
-void TextViewContainer::setPage(FileInfo* fileInfo, int newPageIdx) {
+int TextViewContainer::setPage(FileInfo* fileInfo, int newPageIdx) {
 	if (newPageIdx < 0 || newPageIdx >= fileInfo->pageInfos.size()) {
-		return;
+		return fileInfo->currentPageIdx;
+	}
+
+	//잘못된 페이지 보정(직접 바를 움직였을때 등)
+	if (StatusStore::instance().getTextSettings().isSplitView()) {
+		newPageIdx = newPageIdx - (newPageIdx % 2);
 	}
 
 	fileInfo->currentPageIdx = newPageIdx;
@@ -328,6 +339,7 @@ void TextViewContainer::setPage(FileInfo* fileInfo, int newPageIdx) {
 
 	saveHistory(StatusStore::instance().getTextHistory(), fileInfo);
 
+	return newPageIdx;
 	//testText();
 }
 
