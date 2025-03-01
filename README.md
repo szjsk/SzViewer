@@ -1,6 +1,6 @@
 # SzViewer
 
-### 텍스트뷰어 프로그램 0.1.1
+### 텍스트뷰어 프로그램 0.1.2
 
 이미지 뷰어/텍스트 뷰어 전환 - ChangeView 버튼 클릭
 
@@ -38,8 +38,7 @@
 - F2 : 파일 이름 변경
 - F3 : 분할 보기 파일 이름 변경
 - CTRL + F2 : 폴더 이름 변경
-- *.jpg, *.jpeg, *.png, *.bmp, *.gif 만 지원합니다.  
-- *webp*는 지원 예정입니다.
+- *.jpg, *.jpeg, *.png, *.bmp, *.gif, *.webp , *.ico 등 지원합니다.  
 
 ![SzViewer Image](resources/szViewer-img-1.png)
 
