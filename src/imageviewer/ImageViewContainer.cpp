@@ -15,9 +15,9 @@ ImageViewContainer::ImageViewContainer(QWidget* parent)
 	hBoxBrowser->setSpacing(0);  // 간격을 0으로 설정
 
     // hBoxBrowser에 두 스크롤 영역 추가
-	ui_imageView[0] = new ImageView(this, ImageView::FitIfLARGE, 100);
+	ui_imageView[0] = new ImageView(this);
     hBoxBrowser->addWidget(ui_imageView[0]);
-    ui_imageView[1] = new ImageView(this, ImageView::FitIfLARGE, 100);
+    ui_imageView[1] = new ImageView(this);
     hBoxBrowser->addWidget(ui_imageView[1]);
 
     ui_imageView[1]->setVisible(StatusStore::instance().getImageSettings().isSplitView());
@@ -29,15 +29,15 @@ ImageViewContainer::ImageViewContainer(QWidget* parent)
 	this->installEventFilter(this);
 
     //init
-    ImageScale imageScale = ImageViewContainer::ImageScale();
-	imageScale.percentage = 100;
-	imageScale.scaleMode = StatusStore::instance().getImageSettings().getScaleMode();
-	imageScale.degree = 0;
+    m_imageScale.percentage = 100;
+    m_imageScale.scaleMode = ImageView::ScaleMode::FitIfLARGE;
+    m_imageScale.degree = 0;
+    m_imageScale.isFlip = false;
 
     // 슬라이더 값 변경 시 정보를 업데이트하는 람다 슬롯 연결
     connect(ui_qSlider, &QSlider::valueChanged, this, [this](int value) {
         m_imageInfo.currentIndex = value;
-        navigateToFile(&m_imageInfo, ImageView::None);
+        navigateToFile(ImageView::None);
         ui_qSliderInfo->setText(QString("count: %1 / %2").arg(m_imageInfo.currentIndex +1).arg(ui_qSlider->maximum()+1));
         });
 }
@@ -49,7 +49,7 @@ ImageViewContainer::~ImageViewContainer() {
 void ImageViewContainer::clear() {
 	ui_imageView[0]->clear();
 	ui_imageView[1]->clear();
-    m_imageInfo = ImageInfo();
+    m_imageInfo = ImageListInfo();
 	ui_qSlider->setValue(0);
 	ui_qSlider->setMaximum(0);
 	ui_qSliderInfo->setText(QString("count: %1 / %2").arg(0).arg(0));
@@ -72,7 +72,7 @@ void ImageViewContainer::loadFileList(QString filePath) {
    
     int currentIndex = fileList.indexOf(filePath);
 
-    m_imageInfo = ImageViewContainer::ImageInfo();
+    m_imageInfo = ImageViewContainer::ImageListInfo();
 
 	m_imageInfo.fileList = fileList;
 	m_imageInfo.currentIndex = currentIndex;
@@ -80,15 +80,16 @@ void ImageViewContainer::loadFileList(QString filePath) {
     ui_qSlider->setMaximum(fileList.size()-1);
     ui_qSliderInfo->setText(QString("count: %1 / %2").arg(currentIndex + 1).arg(ui_qSlider->maximum() + 1));
 
-    navigateToFile(&m_imageInfo, ImageView::None);
+    navigateToFile(ImageView::None);
 
     this->window()->activateWindow();
     this->window()->raise();
 }
 
 void ImageViewContainer::resizeImage(ImageView::ScaleMode scaleMode, std::optional<bool> isPlus) {
+    m_imageScale.scaleMode = scaleMode;
 
-    if (scaleMode == ImageView::ScaleByPercentage) {
+    if (m_imageScale.scaleMode == ImageView::ScaleByPercentage) {
 		m_imageScale.percentage = (m_imageScale.percentage <= 0) ? 100 : m_imageScale.percentage;
 
         m_imageScale.percentage = (isPlus.has_value() && isPlus.value()) ? m_imageScale.percentage + 10 : m_imageScale.percentage - 10;
@@ -102,16 +103,15 @@ void ImageViewContainer::resizeImage(ImageView::ScaleMode scaleMode, std::option
 
         for (int i = 0; i < M_IMAGE_BROWSER_CNT; i++) {
             if (ui_imageView[i]->isVisible()) {
-                ui_imageView[i]->resize(scaleMode, m_imageScale.percentage);
+                ui_imageView[i]->resize(m_imageScale.scaleMode, m_imageScale.percentage);
             }
         }
     }
     else {
         m_imageScale.percentage = 100;
-        // todo = scaleMode
         for (int i = 0; i < M_IMAGE_BROWSER_CNT; i++) {
             if (ui_imageView[i]->isVisible()) {
-                ui_imageView[i]->resize(scaleMode, m_imageScale.percentage);
+                ui_imageView[i]->resize(m_imageScale.scaleMode, m_imageScale.percentage);
             }
         }
     }
@@ -122,20 +122,22 @@ bool ImageViewContainer::changeSplitView() {
     StatusStore::instance().getImageSettings().setSplitView(newSplit);
     
 	ui_imageView[1]->setVisible(newSplit);
-	navigateToFile(&m_imageInfo, ImageView::None);
+	navigateToFile(ImageView::None);
     //resizeImage(m_imageScale.scaleMode, m_imageScale.percentage);
 	return newSplit;
 
 }
 
-void ImageViewContainer::navigateToFolder(const ImageInfo* imageInfo, ImageView::MoveMode moveMode) {
+void ImageViewContainer::navigateToFolder(ImageView::MoveMode moveMode) {
     
-    if (m_imageInfo.fileList.isEmpty() ||
-        m_imageInfo.currentIndex >= m_imageInfo.fileList.size() || m_imageInfo.currentIndex < 0) {
+    const ImageListInfo& imageInfo = m_imageInfo;
+
+    if (imageInfo.fileList.isEmpty() ||
+        imageInfo.currentIndex >= imageInfo.fileList.size() || imageInfo.currentIndex < 0) {
         return;
     }
     
-	QString filePath = m_imageInfo.fileList.at(m_imageInfo.currentIndex);
+	QString filePath = imageInfo.fileList.at(imageInfo.currentIndex);
     QString file;
 
     if (moveMode == ImageView::MoveMode::NextFolder) {
@@ -154,7 +156,12 @@ void ImageViewContainer::navigateToFolder(const ImageInfo* imageInfo, ImageView:
 
 }
 
-void ImageViewContainer::navigateToFile(ImageInfo* imageInfo, ImageView::MoveMode moveMode) {
+void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
+
+    ImageListInfo* imageInfo = &m_imageInfo;
+    const ImageScale& imageScale = m_imageScale;
+
+
 	bool isSplit = StatusStore::instance().getImageSettings().isSplitView();
     // split 모드이면 2씩 이동, 아니면 1씩 이동
     int step = isSplit ? 2 : 1;
@@ -177,11 +184,11 @@ void ImageViewContainer::navigateToFile(ImageInfo* imageInfo, ImageView::MoveMod
 
     // 자동 다음 페이지 이동.
     if (currentIndex < 0 && StatusStore::instance().getImageSettings().isAutoNext()) {
-		navigateToFolder(imageInfo, ImageView::MoveMode::PrevFolder);
+		navigateToFolder(ImageView::MoveMode::PrevFolder);
         return;
 	}
 	else if (currentIndex >= imageInfo->fileList.size() && StatusStore::instance().getImageSettings().isAutoNext()) {
-		navigateToFolder(imageInfo, ImageView::MoveMode::NextFolder);
+		navigateToFolder(ImageView::MoveMode::NextFolder);
 		return;
 	}else if (currentIndex < 0 || currentIndex >= imageInfo->fileList.size()) {
         return;
@@ -196,7 +203,7 @@ void ImageViewContainer::navigateToFile(ImageInfo* imageInfo, ImageView::MoveMod
 	for (int i = 0; i < M_IMAGE_BROWSER_CNT; i++) {
         if (ui_imageView[i]->isVisible() && currentIndex + 1 < imageInfo->fileList.size()) {
 			fileName[i] = imageInfo->fileList.at(currentIndex + i);
-            ui_imageView[i]->loadImage(fileName[i]);
+            ui_imageView[i]->loadImage(fileName[i], imageScale.scaleMode, imageScale.percentage);
         }
         else {
 			ui_imageView[1]->clear();
@@ -249,16 +256,16 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
 			toggleFullScreen();
         }
         else if (keyEvent->key() == Qt::Key_PageDown) {
-			navigateToFolder(&m_imageInfo, ImageView::MoveMode::NextFolder);
+			navigateToFolder(ImageView::MoveMode::NextFolder);
         }
         else if (keyEvent->key() == Qt::Key_PageUp) {
-            navigateToFolder(&m_imageInfo, ImageView::MoveMode::PrevFolder);
+            navigateToFolder(ImageView::MoveMode::PrevFolder);
         }
 		else if (keyEvent->key() == Qt::Key_Left) {
-			navigateToFile(&m_imageInfo, ImageView::MoveMode::Prev);
+			navigateToFile(ImageView::MoveMode::Prev);
 		}
 		else if (keyEvent->key() == Qt::Key_Right) {
-			navigateToFile(&m_imageInfo, ImageView::MoveMode::Next);
+			navigateToFile(ImageView::MoveMode::Next);
         }
         else if (keyEvent->key() == Qt::Key_1) {
             resizeImage(ImageView::ScaleMode::FitToWindow);
@@ -282,13 +289,13 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
             resizeImage(ImageView::ScaleMode::ScaleByPercentage, false);
         }
         else if (keyEvent->key() == Qt::Key_Delete) {
-            deleteImageFile(&m_imageInfo);
+            deleteImageFile();
         }
         else if (keyEvent->key() == Qt::Key_F2 && !(keyEvent->modifiers() & Qt::ControlModifier)) {
-            m_imageInfo.fileList = renameFile(m_imageInfo.fileList, m_imageInfo.currentIndex, 0);
+            m_imageInfo.fileList = renameFile(m_imageInfo.fileList, m_imageInfo.currentIndex, 0, m_imageScale);
         }
         else if (keyEvent->key() == Qt::Key_F3 && StatusStore::instance().getImageSettings().isSplitView()) {
-            m_imageInfo.fileList = renameFile(m_imageInfo.fileList, m_imageInfo.currentIndex+1, 1);
+            m_imageInfo.fileList = renameFile(m_imageInfo.fileList, m_imageInfo.currentIndex+1, 1, m_imageScale);
 		}
 		else if (keyEvent->key() == Qt::Key_F2 && keyEvent->modifiers() & Qt::ControlModifier) {
             QString newPath = renameFolder(m_imageInfo.fileList, m_imageInfo.currentIndex);
@@ -308,17 +315,17 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
         int centerX = this->width() / 2;
 
         if (mousePos.x() < centerX) {
-            navigateToFile(&m_imageInfo, ImageView::MoveMode::Prev);
+            navigateToFile(ImageView::MoveMode::Prev);
         }
         else {
-            navigateToFile(&m_imageInfo, ImageView::MoveMode::Next);
+            navigateToFile(ImageView::MoveMode::Next);
         }
     }
 
     return QWidget::eventFilter(watched, event);
 }
 
-QStringList ImageViewContainer::renameFile(QStringList fileList, int fileIdx, int containerIdx) {
+QStringList ImageViewContainer::renameFile(QStringList fileList, int fileIdx, int containerIdx, ImageScale imageScale) {
     if (fileList.isEmpty() || fileIdx >= fileList.size()) {
         return fileList;
     }
@@ -338,7 +345,7 @@ QStringList ImageViewContainer::renameFile(QStringList fileList, int fileIdx, in
 
         if (QFile::rename(currentFile, newPath)) {
             // 파일명 변경 성공
-            ui_imageView[containerIdx]->loadImage(newPath);
+            ui_imageView[containerIdx]->loadImage(newPath, imageScale.scaleMode, imageScale.percentage);
             fileList[fileIdx] = newPath;
             return fileList;
         }
@@ -377,7 +384,8 @@ QString ImageViewContainer::renameFolder(QStringList fileList, int fileIdx) {
     return QString();
 }
 
-void ImageViewContainer::deleteImageFile(const ImageInfo* imageInfo) {
+void ImageViewContainer::deleteImageFile() {
+	const ImageListInfo* imageInfo = &m_imageInfo;
 
     if(m_imageInfo.fileList.isEmpty() ||
         m_imageInfo.currentIndex >= m_imageInfo.fileList.size() || m_imageInfo.currentIndex < 0) {
@@ -403,14 +411,24 @@ void ImageViewContainer::deleteImageFile(const ImageInfo* imageInfo) {
     emit deleteKeyPressed(files, fileList.at(nextIndex));
 }
 
-void ImageViewContainer::rotate(int degree, bool direction) {
+void ImageViewContainer::rotate(int degree) {
+
+    m_imageScale.degree += degree;
+
+    if (m_imageScale.degree == 360 || m_imageScale.degree == - 360) {
+		m_imageScale.degree = 0;
+	}
+
 	for (int i = 0; i < M_IMAGE_BROWSER_CNT; i++) {
-		ui_imageView[i]->rotate(degree, direction);
+		ui_imageView[i]->rotate(m_imageScale.degree, m_imageScale.isFlip);
 	}
 }
 
-ImageViewContainer::ImageInfo* ImageViewContainer::getImageInfo(){
-	return &m_imageInfo;
+void ImageViewContainer::flip() {
+	m_imageScale.isFlip = !m_imageScale.isFlip;
+    for (int i = 0; i < M_IMAGE_BROWSER_CNT; i++) {
+        ui_imageView[i]->rotate(m_imageScale.degree, m_imageScale.isFlip);
+    }
 }
 
 
@@ -449,7 +467,8 @@ QMap<QString, QImage> loadImagesFromArchive(const QString &zipFilePath) {
             if (!zipFile.open(QIODevice::ReadOnly)) {
                 qDebug() << "파일 열기 실패:" << fileName;
                 continue;
-            }
+    
+        }
 
             QByteArray fileData = zipFile.readAll();
             QImage image;

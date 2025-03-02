@@ -2,8 +2,8 @@
 
 #include "../common/StatusStore.h"
 
-ImageView::ImageView(QWidget* parent, ScaleMode scaleMode, int percentage)
-	: QScrollArea(parent), ui_label(new QLabel(this)), m_scaleMode(scaleMode), m_percentage(percentage)
+ImageView::ImageView(QWidget* parent)
+	: QScrollArea(parent)
 {
 
 	setWidgetResizable(true);
@@ -20,83 +20,69 @@ ImageView::ImageView(QWidget* parent, ScaleMode scaleMode, int percentage)
 
 void ImageView::clear() {
 	movieStop();
-	delete m_pixmap;
-	m_pixmap = nullptr;
-	delete m_originMovie;
-	m_originMovie = nullptr;
-	m_originSize = QSize();
+	if (!m_imageInfo.originPixmap) {
+		delete m_imageInfo.originPixmap;
+		m_imageInfo.originPixmap = nullptr;
+	}
+
+	if (!m_imageInfo.changePixmap) {
+		delete m_imageInfo.changePixmap;
+		m_imageInfo.changePixmap = nullptr;
+	}
+
+	if (!m_imageInfo.originMovie) {
+		delete m_imageInfo.originMovie;
+		m_imageInfo.originMovie = nullptr;
+	}
+
 	ui_label->clear();
 	ui_label->setText("");
+	//ui_label->setPixmap(nullptr); // 기존 이미지는 초기화
+	//ui_label->setMovie(movie);
 }
 
-void ImageView::loadImage(QString& filePath)
+void ImageView::loadImage(QString& filePath, ScaleMode scaleMode, int percentage)
 {
-
 	StatusStore::instance().getImageHistory().addFileInfo(filePath, -1, "");
 
 	QFileInfo fileInfo(filePath);
 	QString suffix = fileInfo.suffix().toLower();
 
 	clear();
+	m_imageInfo = ImageInfo();
 
 	if (suffix == "gif") {
-		m_isGif = true;
-		m_originMovie = new QMovie(filePath, QByteArray(), ui_label);
-		m_originMovie->jumpToFrame(0);
-		m_originSize = m_originMovie->currentPixmap().size();
+		m_imageInfo.isGif = true;
+		m_imageInfo.originMovie = new QMovie(filePath, QByteArray(), ui_label);
+		m_imageInfo.originMovie->jumpToFrame(0);
+		m_imageInfo.originSize = m_imageInfo.originMovie->currentPixmap().size();
 	}
 	else {
-		m_isGif = false;
-		m_pixmap = new QPixmap(filePath);
-		m_originSize = m_pixmap->size();
+		m_imageInfo.isGif = false;
+		m_imageInfo.originPixmap = new QPixmap(filePath);
+		m_imageInfo.originSize = m_imageInfo.originPixmap->size();
 	}
-	resize(m_scaleMode, m_percentage);
+	resize(scaleMode, percentage);
 }
 
 void ImageView::resize(ScaleMode mode, int percentage) {
-	m_scaleMode = mode;
-	m_percentage = percentage;
-	if (m_originMovie == nullptr && m_pixmap == nullptr) {
-		return;
-	}
 
-	if (m_isGif) {
-		setGif(m_originMovie, ui_label);
+	if (m_imageInfo.isGif) {
+		qDebug() << "resize gif : " << mode;
+
+		m_imageInfo.originMovie->jumpToFrame(0);
+		m_imageInfo.originMovie = getScaledQMovie(m_imageInfo.originMovie, m_imageInfo.originSize, mode, percentage);
+
+//		label->setMovie(movie);
+		m_imageInfo.originMovie->start();
 	}
 	else {
-		setImg(m_pixmap, ui_label);
+		qDebug() << "resize image : " << mode;
+		QPixmap newPixMap = getScaledPixmap(m_imageInfo.originPixmap, m_imageInfo.originSize, mode, percentage);
+		m_imageInfo.changePixmap = &newPixMap;
+		ui_label->setPixmap(*m_imageInfo.changePixmap);
 	}
 	ui_label->adjustSize();
-}
-
-
-void ImageView::setGif(QMovie* movie, QLabel* label) {
-	if (!movie->isValid())
-	{
-		ui_label->movie()->stop();
-		ui_label->setMovie(nullptr);
-		label->clear();
-		label->setText("can not load gif");
-		return;
-	}
-	m_originMovie->jumpToFrame(0);
-	movie = getScaledQMovie(movie, m_originSize, m_scaleMode, m_percentage);
-
-	label->setPixmap(QPixmap()); // 기존 이미지는 초기화
-	label->setMovie(movie);
-	movie->start();
-}
-
-void ImageView::setImg(QPixmap* pixmap, QLabel* label) {
-	if (pixmap->isNull())
-	{
-		label->clear();
-		label->setText("can not load Image");
-		return;
-	}
-
-	QPixmap newPixMap = getScaledPixmap(pixmap, m_originSize, m_scaleMode, m_percentage);
-	label->setPixmap(newPixMap);
 }
 
 QMovie* ImageView::getScaledQMovie(QMovie* movie, QSize originSize, ScaleMode mode, int percentage) {
@@ -162,30 +148,33 @@ QPixmap ImageView::getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode 
 	}
 }
 
-void ImageView::rotate(int degree, bool direction) {
-	if (m_isGif) {
-		if (!m_originMovie || !m_originMovie->isValid()) return;
+void ImageView::rotate(int degree, bool isFlip) {
+
+	qDebug() << "degree : " << degree;
+
+	if (m_imageInfo.isGif && m_imageInfo.originMovie) {
 
 		// GIF의 경우 현재 프레임을 가져와서 회전
-		QPixmap currentFrame = m_originMovie->currentPixmap();
+		QPixmap currentFrame = m_imageInfo.originMovie->currentPixmap();
 		QTransform transform;
-		transform.rotate(direction ? degree : -degree);
+		if (isFlip) {
+			transform.scale(-1, 1);  
+		}
+		transform.rotate(degree);
 		currentFrame = currentFrame.transformed(transform, Qt::SmoothTransformation);
-
-		//ui_label->setMovie(nullptr);  // 현재 동영상 중지
-		//ui_label->setPixmap(currentFrame);  // 회전된 현재 프레임 표시
-
 	}
-	else {
-		if (!m_pixmap) return;
+	else if(!m_imageInfo.isGif && m_imageInfo.originPixmap){
 		
 		// 일반 이미지의 경우 QPixmap 회전
 		QTransform transform;
-		transform.rotate(direction ? degree : -degree);
-		*m_pixmap = m_pixmap->transformed(transform, Qt::SmoothTransformation);
+		if (isFlip) {
+			transform.scale(-1, 1);  
+		}
+		transform.rotate(degree);
+		m_imageInfo.changePixmap = new QPixmap(m_imageInfo.originPixmap->transformed(transform, Qt::SmoothTransformation));
+		ui_label->setPixmap(*m_imageInfo.changePixmap);
 
-		// 회전된 이미지 표시
-		setImg(m_pixmap, ui_label);
+
 	}
 
 	// 회전 후 크기 조정
@@ -194,10 +183,10 @@ void ImageView::rotate(int degree, bool direction) {
 }
 
 void ImageView::movieStop() {
-	if (m_isGif && m_originMovie) {
-		m_originMovie->stop();
+	if (m_imageInfo.isGif && m_imageInfo.originMovie) {
+		m_imageInfo.originMovie->stop();
 		ui_label->setMovie(nullptr);
-		delete m_originMovie;
-		m_originMovie = nullptr;
+		delete m_imageInfo.originMovie;
+		m_imageInfo.originMovie = nullptr;
 	}
 }

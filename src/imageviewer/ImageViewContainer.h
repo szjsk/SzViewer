@@ -26,7 +26,7 @@ class ImageViewContainer : public QWidget
 
 public:
 
-	struct ImageInfo {
+	struct ImageListInfo {
 		QStringList fileList;
 		int currentIndex;
 	};
@@ -34,6 +34,7 @@ public:
 	struct ImageScale {
 		int percentage;
 		int degree;
+		bool isFlip;
 		ImageView::ScaleMode scaleMode;
 	};
 
@@ -41,14 +42,14 @@ public:
 	~ImageViewContainer();
 	void loadFileList(QString filePath);
 	bool changeSplitView();
-	void navigateToFile(ImageInfo* imageInfo, ImageView::MoveMode moveMode);
-	void navigateToFolder(const ImageInfo* imageInfo, ImageView::MoveMode moveMode);
+	void navigateToFile(ImageView::MoveMode moveMode);
+	void navigateToFolder(ImageView::MoveMode moveMode);
 	void resizeImage(ImageView::ScaleMode scaleMode, std::optional<bool> isPlus = std::nullopt);
-	void deleteImageFile(const ImageInfo* imageInfo);
+	void deleteImageFile();
 	void clear();
 	void toggleFullScreen(bool isNormal = false);
-	void rotate(int degree, bool direction);
-	ImageInfo* getImageInfo();
+	void rotate(int degree);
+	void flip();
 
 protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
@@ -58,7 +59,7 @@ signals:
 
 private:
 	QHBoxLayout* createSlider();
-	QStringList renameFile(QStringList fileList, int fileIdx, int containerIdx);
+	QStringList renameFile(QStringList fileList, int fileIdx, int containerIdx , ImageScale imageScale);
 	QString renameFolder(QStringList fileList, int fileIdx);
 
 private: //variable
@@ -66,7 +67,7 @@ private: //variable
 	QSlider* ui_qSlider;
 	QLabel* ui_qSliderInfo;
 	ImageView* ui_imageView[M_IMAGE_BROWSER_CNT];
-	ImageInfo m_imageInfo;
+	ImageListInfo m_imageInfo;
 	ImageScale m_imageScale;
 };
 

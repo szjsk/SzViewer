@@ -81,17 +81,17 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
 
     QAction* rotationVAction = new QAction(QIcon(":/icon/resources/icon/screen_rotation_alt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "rotation 180", this);
     rotationVAction->setToolTip("rotation 180 degree");
-    connect(rotationVAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(180, true);});
+    connect(rotationVAction, &QAction::triggered, this, [this]() {m_imageViewContainer->flip();});
     this->addAction(rotationVAction);
 
     QAction* roationRAction = new QAction(QIcon(":/icon/resources/icon/rotate_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "rotation r 90", this);
     roationRAction->setToolTip("rotation 90 degree right");
-    connect(roationRAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(45, true);});
+    connect(roationRAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(45);});
     this->addAction(roationRAction);
 
     QAction* roationLAction = new QAction(QIcon(":/icon/resources/icon/rotate_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "rotation l 90 ", this);
     roationLAction->setToolTip("rotation 90 degree left");
-    connect(roationLAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(45, false);});
+    connect(roationLAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(-45);});
     this->addAction(roationLAction);
 
 
@@ -117,16 +117,16 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
 
     QAction* deleteAction = new QAction(QIcon(":/icon/resources/icon/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "delete", this);
     deleteAction->setToolTip("delete file or folder (del)");
-    connect(deleteAction, &QAction::triggered, this, [this]() {m_imageViewContainer->deleteImageFile(m_imageViewContainer->getImageInfo());});
+    connect(deleteAction, &QAction::triggered, this, [this]() {m_imageViewContainer->deleteImageFile();});
     this->addAction(deleteAction);
 
 }
 
 void ImageToolBar::move(ImageView::MoveMode mode) {
     if (mode == ImageView::NextFolder || mode == ImageView::PrevFolder) {
-        m_imageViewContainer->navigateToFolder(m_imageViewContainer->getImageInfo(), mode);
+        m_imageViewContainer->navigateToFolder(mode);
     }
     else {
-        m_imageViewContainer->navigateToFile(m_imageViewContainer->getImageInfo(), mode);
+        m_imageViewContainer->navigateToFile(mode);
     }
 }

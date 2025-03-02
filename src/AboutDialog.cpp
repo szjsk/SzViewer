@@ -40,6 +40,7 @@ AboutDialog::AboutDialog(QWidget* parent)
         5 : 이미지가 화면보다 클때 맞춤<br>
         + : 확대<br>
         - : 축소<br>
+        f : 전체화면/ 전체화면 종료 (esc)<br>
         F2 : 파일 이름 변경<br>
         F3 : 분할 보기 파일 이름 변경<br>
         CTRL + F2 : 폴더 이름 변경<br>
