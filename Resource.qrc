@@ -23,5 +23,8 @@
         <file>resources/icon/zoom_in_24dp_1F1F1F.svg</file>
         <file>resources/icon/zoom_out_24dp_1F1F1F.svg</file>
         <file>resources/icon/zoom_out_map_24dp_1F1F1F.svg</file>
+        <file>resources/icon/rotate_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>resources/icon/rotate_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg</file>
+        <file>resources/icon/screen_rotation_alt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg</file>
     </qresource>
 </RCC>

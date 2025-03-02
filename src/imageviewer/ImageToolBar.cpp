@@ -10,7 +10,7 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
     scaleModeAction->addItems({ "size", "FitWindow(1)", "ORIGINAL(2)", "FitByWidth(3)" , "FitByHeight(4)", "FitIfLagrge(5)"});
     connect(scaleModeAction, QOverload<int>::of(&QComboBox::activated), this, [this, scaleModeAction](int index) {
         scaleModeAction->setCurrentIndex(0);
-        ImageView::ScaleMode mode = ImageView::FitToWindow;
+        ImageView::ScaleMode mode;
         switch (index) {
         case 0:
             return;
@@ -30,10 +30,10 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
             mode = ImageView::FitIfLARGE;
             break;
         default:
-            mode = ImageView::FitToWindow;
+            mode = ImageView::FitIfLARGE;
             break;
         }
-        resizeEvent(mode, 0);
+        m_imageViewContainer->resizeImage(mode);
         });
     this->addWidget(scaleModeAction);
 
@@ -41,12 +41,12 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
 
     QAction* plusAction = new QAction(QIcon(":/icon/resources/icon/zoom_in_24dp_1F1F1F.svg"), "+", this);
     plusAction->setToolTip("Zoom in 10% of original size 10% (+)");
-    connect(plusAction, &QAction::triggered, this, [this]() {resizeEvent(ImageView::ScaleByPercentage, 1);});
+    connect(plusAction, &QAction::triggered, this, [this]() {m_imageViewContainer->resizeImage(ImageView::ScaleByPercentage, true);});
     this->addAction(plusAction);
 
     QAction* minusAction = new QAction(QIcon(":/icon/resources/icon/zoom_out_24dp_1F1F1F.svg"), "-", this);
     minusAction->setToolTip("Zoom out 10% of original size 10% (+)");
-    connect(minusAction, &QAction::triggered, this, [this]() {resizeEvent(ImageView::ScaleByPercentage, -1);});
+    connect(minusAction, &QAction::triggered, this, [this]() {m_imageViewContainer->resizeImage(ImageView::ScaleByPercentage, false);});
     this->addAction(minusAction);
 
     QAction* move1Action = new QAction(QIcon(":/icon/resources/icon/fast_rewind_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "<<<", this);
@@ -79,6 +79,22 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
     connect(move6Action, &QAction::triggered, this, [this]() {move(ImageView::NextFolder);});
     this->addAction(move6Action);
 
+    QAction* rotationVAction = new QAction(QIcon(":/icon/resources/icon/screen_rotation_alt_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "rotation 180", this);
+    rotationVAction->setToolTip("rotation 180 degree");
+    connect(rotationVAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(180, true);});
+    this->addAction(rotationVAction);
+
+    QAction* roationRAction = new QAction(QIcon(":/icon/resources/icon/rotate_right_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "rotation r 90", this);
+    roationRAction->setToolTip("rotation 90 degree right");
+    connect(roationRAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(45, true);});
+    this->addAction(roationRAction);
+
+    QAction* roationLAction = new QAction(QIcon(":/icon/resources/icon/rotate_left_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "rotation l 90 ", this);
+    roationLAction->setToolTip("rotation 90 degree left");
+    connect(roationLAction, &QAction::triggered, this, [this]() {m_imageViewContainer->rotate(45, false);});
+    this->addAction(roationLAction);
+
+
 
     //for split
     QAction* splitAction = new QAction(QIcon(":/icon/resources/icon/auto_stories_24dp_1F1F1F.svg"), "Split", this);
@@ -101,19 +117,16 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
 
     QAction* deleteAction = new QAction(QIcon(":/icon/resources/icon/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "delete", this);
     deleteAction->setToolTip("delete file or folder (del)");
-    connect(deleteAction, &QAction::triggered, this, [this]() {m_imageViewContainer->deleteImageFile();});
+    connect(deleteAction, &QAction::triggered, this, [this]() {m_imageViewContainer->deleteImageFile(m_imageViewContainer->getImageInfo());});
     this->addAction(deleteAction);
 
 }
 
 void ImageToolBar::move(ImageView::MoveMode mode) {
     if (mode == ImageView::NextFolder || mode == ImageView::PrevFolder) {
-        m_imageViewContainer->navigateToFolder(mode);
+        m_imageViewContainer->navigateToFolder(m_imageViewContainer->getImageInfo(), mode);
     }
     else {
-        m_imageViewContainer->navigateToFile(mode);
+        m_imageViewContainer->navigateToFile(m_imageViewContainer->getImageInfo(), mode);
     }
-}
- void ImageToolBar::resizeEvent(ImageView::ScaleMode mode, int plusMinus) {
-     m_imageViewContainer->resizeImage(mode, plusMinus);
 }

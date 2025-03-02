@@ -7,6 +7,7 @@
 #include <QPixmap>
 #include <QMovie>
 #include <QFileInfo>
+#include <QPainter>
 
 class ImageView : public QScrollArea
 {
@@ -34,11 +35,12 @@ public:
 	};
 
 
-    explicit ImageView(QWidget* parent = nullptr, ScaleMode scaleMode = FitToWindow, int percentage = 100);
+    explicit ImageView(QWidget* parent = nullptr, ScaleMode scaleMode = FitIfLARGE, int percentage = 100);
 	void loadImage(QString& filePath);
 	void resize(ScaleMode mode, int percentage);
 	void movieStop();
 	void clear();
+	void rotate(int degree, bool direction);
 
 private:
 	void setGif(QMovie* movie, QLabel* label);

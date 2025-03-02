@@ -6,21 +6,22 @@
 #include <QMargins>
 #include <QJsonObject>
 #include "../common/IJsonSerializable.h"
+#include "ImageView.h"
 
 class ImageSettingProps : public IJsonSerializable
 {
 public:
     ImageSettingProps();
     ImageSettingProps(bool splitView,
-                 int scaleMode, 
+                 ImageView::ScaleMode scaleMode,
                  bool isAuoNext);
 
     // getter, setter
     bool isSplitView() const;
     void setSplitView(bool value);
 
-    int getScaleMode() const;
-    void setScaleMode(int value);
+    ImageView::ScaleMode getScaleMode() const;
+    void setScaleMode(ImageView::ScaleMode value);
 
 	bool isAutoNext() const;
 	void setAutoNext(bool value);
@@ -32,7 +33,7 @@ public:
 
 private:
     bool m_splitView;
-    int m_scaleMode;
+    ImageView::ScaleMode m_scaleMode;
     bool m_autoNext;
 
 };

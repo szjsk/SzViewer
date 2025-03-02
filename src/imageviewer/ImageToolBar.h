@@ -18,7 +18,6 @@ public:
 private:
 	ImageViewContainer* m_imageViewContainer;
 	void move(ImageView::MoveMode mode);
-	void resizeEvent(ImageView::ScaleMode mode, int plusMinus);
 
 private slots:
 

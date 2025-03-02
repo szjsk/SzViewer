@@ -26,6 +26,7 @@ void ImageView::clear() {
 	m_originMovie = nullptr;
 	m_originSize = QSize();
 	ui_label->clear();
+	ui_label->setText("");
 }
 
 void ImageView::loadImage(QString& filePath)
@@ -67,6 +68,7 @@ void ImageView::resize(ScaleMode mode, int percentage) {
 	}
 	ui_label->adjustSize();
 }
+
 
 void ImageView::setGif(QMovie* movie, QLabel* label) {
 	if (!movie->isValid())
@@ -158,6 +160,37 @@ QPixmap ImageView::getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode 
 	}default:
 		return *pixmap;
 	}
+}
+
+void ImageView::rotate(int degree, bool direction) {
+	if (m_isGif) {
+		if (!m_originMovie || !m_originMovie->isValid()) return;
+
+		// GIF의 경우 현재 프레임을 가져와서 회전
+		QPixmap currentFrame = m_originMovie->currentPixmap();
+		QTransform transform;
+		transform.rotate(direction ? degree : -degree);
+		currentFrame = currentFrame.transformed(transform, Qt::SmoothTransformation);
+
+		//ui_label->setMovie(nullptr);  // 현재 동영상 중지
+		//ui_label->setPixmap(currentFrame);  // 회전된 현재 프레임 표시
+
+	}
+	else {
+		if (!m_pixmap) return;
+		
+		// 일반 이미지의 경우 QPixmap 회전
+		QTransform transform;
+		transform.rotate(direction ? degree : -degree);
+		*m_pixmap = m_pixmap->transformed(transform, Qt::SmoothTransformation);
+
+		// 회전된 이미지 표시
+		setImg(m_pixmap, ui_label);
+	}
+
+	// 회전 후 크기 조정
+	//m_originSize = m_isGif ? ui_label->pixmap().size() : m_pixmap->size();
+	//resize(m_scaleMode, m_percentage);
 }
 
 void ImageView::movieStop() {
