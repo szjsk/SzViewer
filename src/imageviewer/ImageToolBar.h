@@ -8,16 +8,17 @@
 #include <QWidget>
 #include "../common/StatusStore.h"
 #include "ImageViewContainer.h"
+#include "ImageSettingDialog.h"
 
 class ImageToolBar : public QToolBar
 {
     Q_OBJECT
 public:
-    explicit ImageToolBar(QWidget* parent = nullptr, ImageViewContainer* imageViewContainer = nullptr);
+    explicit ImageToolBar(QWidget* parent = nullptr, ImageViewContainer* container = nullptr);
 
 private:
-	ImageViewContainer* m_imageViewContainer;
-	void move(ImageView::MoveMode mode);
+	void move(ImageViewContainer* container, ImageViewContainer::MoveMode mode);
+	void openSettingDialog(ImageViewContainer* container);
 
 private slots:
 

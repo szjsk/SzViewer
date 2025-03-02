@@ -7,13 +7,9 @@ AboutDialog::AboutDialog(QWidget* parent)
 	setWindowTitle("About");
 	setFixedSize(400, 500);
     //f:\qt\6.8.2\msvc2022_64\bin\windeployqt6.exe
-    // - 
-    //     // - 이미지 뷰어 fitwindow 시 두개 뷰어 왼쪽 오른쪽 정렬 추가. 2
-    // - 이미지 뷰어 회전기능 추가 3
     // 
     // - 파일 그룹화 기능 추가 (파일 삭제, 일괄 이름 변경을 위한 그룹)
-    // - 압축파일 지원(리팩토링 추가) 1
-
+    // - 압축파일 지원
     // 이미지 단축키 설정 추가
 
     const QString titleText = R"(
@@ -53,7 +49,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     const QString aboutText = R"(
         <p><b>작성자</b> : 황재식<br>
         <b>이메일</b> : <a href="mailto:sizz.js@gmail.com">sizz.js@gmail.com</a></p>
-        <b>버전</b> : 0.1.2 (2025.03.01)</p>
+        <b>버전</b> : 0.2.0 (2025.03.03)</p>
     )";
 
 

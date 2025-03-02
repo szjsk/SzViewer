@@ -76,6 +76,8 @@ private:
 	QSpinBox* ui_paddingBottomSpin;
 	QSpinBox* ui_paddingLeftSpin;
 	QSpinBox* ui_paddingRightSpin;
+
+	QCheckBox* ui_autoNextCheck;
 };
 
 #endif // TextSettingDialog_H

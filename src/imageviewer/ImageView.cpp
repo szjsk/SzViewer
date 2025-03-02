@@ -41,7 +41,7 @@ void ImageView::clear() {
 	//ui_label->setMovie(movie);
 }
 
-void ImageView::loadImage(QString& filePath, ScaleMode scaleMode, int percentage)
+void ImageView::loadImage(QString& filePath, ScaleMode scaleMode, int percentage, Align align)
 {
 	StatusStore::instance().getImageHistory().addFileInfo(filePath, -1, "");
 
@@ -56,28 +56,40 @@ void ImageView::loadImage(QString& filePath, ScaleMode scaleMode, int percentage
 		m_imageInfo.originMovie = new QMovie(filePath, QByteArray(), ui_label);
 		m_imageInfo.originMovie->jumpToFrame(0);
 		m_imageInfo.originSize = m_imageInfo.originMovie->currentPixmap().size();
+		m_imageInfo.align = align;
 	}
 	else {
 		m_imageInfo.isGif = false;
 		m_imageInfo.originPixmap = new QPixmap(filePath);
 		m_imageInfo.originSize = m_imageInfo.originPixmap->size();
+		m_imageInfo.align = align;
 	}
 	resize(scaleMode, percentage);
+	setAlignment(align);
+}
+
+void ImageView::setAlignment(Align align) {
+	m_imageInfo.align = align;
+	if (align == Align::LEFT)
+		ui_label->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+	else if (align == Align::CENTER)
+		ui_label->setAlignment(Qt::AlignCenter);
+	else if (align == Align::RIGHT)
+		ui_label->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
+	else
+		ui_label->setAlignment(Qt::AlignCenter);
 }
 
 void ImageView::resize(ScaleMode mode, int percentage) {
 
 	if (m_imageInfo.isGif) {
-		qDebug() << "resize gif : " << mode;
-
 		m_imageInfo.originMovie->jumpToFrame(0);
 		m_imageInfo.originMovie = getScaledQMovie(m_imageInfo.originMovie, m_imageInfo.originSize, mode, percentage);
 
-//		label->setMovie(movie);
+		ui_label->setMovie(m_imageInfo.originMovie);
 		m_imageInfo.originMovie->start();
 	}
 	else {
-		qDebug() << "resize image : " << mode;
 		QPixmap newPixMap = getScaledPixmap(m_imageInfo.originPixmap, m_imageInfo.originSize, mode, percentage);
 		m_imageInfo.changePixmap = &newPixMap;
 		ui_label->setPixmap(*m_imageInfo.changePixmap);

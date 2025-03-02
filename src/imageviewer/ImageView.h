@@ -23,15 +23,11 @@ public:
 		FitIfLARGE
 
 	};
-
-	enum MoveMode {
-		None,
-		Next,
-		Last,
-		NextFolder,
-		Prev,
-		First,
-		PrevFolder
+	enum Align {
+		LEFT,
+		CENTER,
+		RIGHT,
+		CENTER_SPREAD
 	};
 
 	struct ImageInfo {
@@ -40,15 +36,17 @@ public:
 		QPixmap* originPixmap;
 		QPixmap* changePixmap;
 		QSize originSize;
+		Align align;
 	};
 
 
     explicit ImageView(QWidget* parent = nullptr);
-	void loadImage(QString& filePath, ScaleMode scaleMode, int percentage);
+	void loadImage(QString& filePath, ScaleMode scaleMode, int percentage, Align align);
 	void resize(ScaleMode mode, int percentage);
 	void movieStop();
 	void clear();
 	void rotate(int degree, bool isFlip);
+	void setAlignment(Align align);
 
 private:
 	QPixmap getScaledPixmap(QPixmap* pixmap, QSize originSize, ScaleMode mode, int percentage);

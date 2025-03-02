@@ -113,6 +113,14 @@ TextSettingDialog::TextSettingDialog(TextSettingProps settings, QWidget* parent)
     paddingLayout->addWidget(ui_paddingRightSpin, 4, 1);
     mainLayout->addLayout(paddingLayout);
 
+    // 볼드, 이탤릭 체크박스
+    QHBoxLayout* styleAutoLayout = new QHBoxLayout;
+    ui_autoNextCheck = new QCheckBox(tr("when last/first page move prev/next file."), this);
+    ui_autoNextCheck->setChecked(m_settings.isAutoNext());
+    styleAutoLayout->addWidget(ui_autoNextCheck);
+    mainLayout->addLayout(styleAutoLayout);
+
+
     // OK / Cancel 버튼
     ui_buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     mainLayout->addWidget(ui_buttonBox);
@@ -222,6 +230,7 @@ TextSettingProps TextSettingDialog::getTextSettings()
     m_settings.setTextColor(selectedTextColor());
     m_settings.setBackgroundColor(selectedBackgroundColor());
     m_settings.setPadding(selectedPadding());
+	m_settings.setAutoNext(ui_autoNextCheck->isChecked());
 
     return m_settings;
 }

@@ -159,7 +159,8 @@ QString FileUtils::moveFolder(QString fileName, MoveMode moveMode, SupportType t
     sortByWindow(newFilePaths);
 
     if (!newFilePaths.isEmpty()) {
-        QString file = nextFolder.absoluteFilePath(fileNames[0]);
+        int idx = moveMode == MoveMode::NextFolder ? 0 : newFilePaths.size() - 1;
+        QString file = nextFolder.absoluteFilePath(newFilePaths[idx]);
         return file;
 	}
 	else {

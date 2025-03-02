@@ -97,6 +97,7 @@
     <ClCompile Include="src\AboutDialog.cpp" />
     <ClCompile Include="src\common\DeleteFilesDialog.cpp" />
     <ClCompile Include="src\common\HistoryProps.cpp" />
+    <ClCompile Include="src\imageviewer\ImageSettingDialog.cpp" />
     <ClCompile Include="src\imageviewer\ImageView.cpp" />
     <ClCompile Include="src\imageviewer\ImageViewContainer.cpp" />
     <ClCompile Include="src\imageviewer\ImageSettingProps.cpp" />
@@ -128,6 +129,7 @@
     <QtMoc Include="src\imageviewer\ImageView.h" />
     <QtMoc Include="src\imageviewer\ImageToolBar.h" />
     <ClInclude Include="src\common\HistoryProps.h" />
+    <QtMoc Include="src\imageviewer\ImageSettingDialog.h" />
     <ClInclude Include="src\imageviewer\ImageSettingProps.h" />
     <ClInclude Include="src\textviewer\TextSettingProps.h" />
     <QtMoc Include="src\textviewer\TextSettingDialog.h" />

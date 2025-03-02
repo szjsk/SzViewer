@@ -49,9 +49,9 @@ public:
     TextViewContainer(QWidget* parent = nullptr);
     ~TextViewContainer();
     void initTextFile(QString filePath);
+    void nextPage(const FileInfo* fileInfo);
+    void prevPage(const FileInfo* fileInfo);
     bool changeSplitView();
-
-
     void findPage(const QString&, long page, long line);
 	void deleteFile(const FileInfo* fileInfo);
 	void clear();
@@ -67,13 +67,10 @@ private:
     QTextBrowser* createTextBrowser(TextSettingProps settings); //텍스트뷰 생성
     int getMaxHeight(QTextBrowser* tb);
     int getMaxWidth(QTextBrowser* tb);
-
     int getFontWidth(QFontMetrics* tb, QChar c);
     int setPage(FileInfo* fileInfo, int newPageIdx);
     void refreshStyle(TextSettingProps settings, QTextBrowser* tb);
     void applyLineSpacing(QTextBrowser* tb);
-    void nextPage(const FileInfo* fileInfo);
-    void prevPage(const FileInfo* fileInfo);
     void saveHistory(HistoryProps& history, const FileInfo* fileInfo);
     SavedFileInfo loadHistory(HistoryProps history, QString filePath);
     void testText();
