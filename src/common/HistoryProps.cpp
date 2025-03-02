@@ -42,6 +42,17 @@ void HistoryProps::addFileInfo(QString filename, long textPosition, QString text
     m_fileInfos = caclulateHistorySize(m_fileInfos);
 }
 
+void HistoryProps::removeAllNoFixed() {
+
+    QHash<QString, SavedFileInfo> newfileInfos;
+    for (const SavedFileInfo& info : m_fileInfos) {
+		if (info.isBookmarked) {
+			newfileInfos.insert(info.fileName, info);
+		}
+    }
+    m_fileInfos = newfileInfos;
+}
+
 
 QHash<QString, SavedFileInfo> HistoryProps::caclulateHistorySize(QHash<QString, SavedFileInfo> allInfos) {
 

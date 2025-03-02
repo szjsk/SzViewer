@@ -54,6 +54,7 @@ public:
     void addFileInfo(QString filename, long textPosition, QString textLine);
     void setFixedState(SavedFileInfo fileInfo, bool isFixed);
     void setFileInfo(QHash<QString, SavedFileInfo> m_fileInfos);
+    void removeAllNoFixed();
 
     // JSON 직렬화/역직렬화 메서드
     QJsonObject toJson() const override;

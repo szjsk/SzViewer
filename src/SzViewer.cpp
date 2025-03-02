@@ -99,6 +99,19 @@ QToolBar* SzViewer::CommonLeft() {
 	QAction* openAction = fileMenu->addAction("Open");
 	connect(openAction, &QAction::triggered, this, &SzViewer::openFileDialog);
 
+	QAction* historyClearAction = fileMenu->addAction("Clear");
+	connect(historyClearAction, &QAction::triggered, this, [this, fileMenu]() {
+
+		StatusStore::instance().getTextHistory().removeAllNoFixed();
+		StatusStore::instance().saveTextHistory(StatusStore::instance().getTextHistory());
+
+		StatusStore::instance().getImageHistory().removeAllNoFixed();
+		StatusStore::instance().saveImageHistory(StatusStore::instance().getImageHistory());
+		addQActionInFileMenu(fileMenu);
+
+		});
+
+
 	connect(fileMenu, &QMenu::aboutToShow, [this, fileMenu]() {
 		addQActionInFileMenu(fileMenu);
 		});
@@ -111,8 +124,8 @@ QToolBar* SzViewer::CommonLeft() {
 
 void SzViewer::addQActionInFileMenu(QMenu* fileMenu) {
 	QList<QAction*> actions = fileMenu->actions();
-	// 첫 번째 액션은 삭제하지 않음
-	for (int i = actions.size() - 1; i > 0; i--) {
+	// 1,2 액션은 삭제하지 않음
+	for (int i = actions.size() - 1; i > 1; i--) {
 		fileMenu->removeAction(actions.at(i));
 	}
 
