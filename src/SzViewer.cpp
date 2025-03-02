@@ -90,7 +90,7 @@ QToolBar* SzViewer::CommonLeft() {
 	// QToolButton과 QMenu를 사용하여 파일 메뉴를 구성합니다.
 	QToolButton* fileToolButton = new QToolButton(toolBar);
 	fileToolButton->setText("File");
-	fileToolButton->setIcon(QIcon(":/path/to/icon.png"));
+	fileToolButton->setIcon(QIcon(":/icon/resources/icon/folder_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"));
 	fileToolButton->setPopupMode(QToolButton::InstantPopup);
 
 	QMenu* fileMenu = new QMenu(fileToolButton);
@@ -159,11 +159,11 @@ void SzViewer::addHistoryCheckBox(QMenu* fileMenu, HistoryProps props, HistoryPr
 QToolBar* SzViewer::CommonRight() {
 	QToolBar* toolBar = new QToolBar(this);
 	toolBar->setMovable(true);
-	QAction* imageAction = new QAction(QIcon(":/path/to/icon.png"), "changeView", this);
+	QAction* imageAction = new QAction(QIcon(":/icon/resources/icon/autorenew_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "changeView", this);
 	connect(imageAction, &QAction::triggered, this, [this]() { changeVisible(!ui_imageViewContainer->isVisible());});
 	toolBar->addAction(imageAction);
 
-	QAction* helpAction = new QAction(QIcon(":/path/to/icon.png"), "Help", this);
+	QAction* helpAction = new QAction(QIcon(":/icon/resources/icon/help_outline_24dp_1F1F1F.svg"), "Help", this);
 	connect(helpAction, &QAction::triggered, this, [this]() {
 		AboutDialog dialog(this);
 		dialog.exec();

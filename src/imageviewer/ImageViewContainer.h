@@ -34,8 +34,7 @@ public:
 	void resizeImage(ImageView::ScaleMode scaleMode, int plusMinus);
 	void deleteImageFile();
 	void clear();
-
-
+	void toggleFullScreen(bool isNormal = false);
 
 protected:
 	bool eventFilter(QObject* watched, QEvent* event) override;
@@ -48,7 +47,6 @@ private:
 	void sizeChange(ImageView::ScaleMode mode, int percentage);
 	QStringList renameFile(QStringList fileList, int fileIdx, int containerIdx);
 	QString renameFolder(QStringList fileList, int fileIdx);
-	void toggleFullScreen();
 
 private: //variable
 	static constexpr int M_IMAGE_BROWSER_CNT = 2;

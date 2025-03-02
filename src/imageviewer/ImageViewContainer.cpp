@@ -200,15 +200,20 @@ void ImageViewContainer::navigateToFile(ImageView::MoveMode moveMode) {
 
 }
 
-void ImageViewContainer::toggleFullScreen() {
+void ImageViewContainer::toggleFullScreen(bool isNormal) {
     QMainWindow* mainWindow = qobject_cast<QMainWindow*>(window());
 
-    if (mainWindow->isFullScreen()) {
-        mainWindow->showNormal();
-        ui_qSlider->show();
-        ui_qSliderInfo->show();
-        mainWindow->menuWidget()->show();
-        resizeImage(m_scaleMode, m_percentage);
+    //isNormal(esc키)이 true일때는 무조건 노말스크린으로 이동.
+    //다만 현재 노말스크린일때는 굳이 로직을 탈필요가 없음. 
+    if (isNormal || mainWindow->isFullScreen()) {
+        if (mainWindow->isFullScreen()) {
+            mainWindow->showNormal();
+            ui_qSlider->show();
+            ui_qSliderInfo->show();
+            mainWindow->menuWidget()->show();
+            resizeImage(m_scaleMode, m_percentage);
+            return;
+        }
     }
     else {
         ui_qSlider->hide();
@@ -216,7 +221,9 @@ void ImageViewContainer::toggleFullScreen() {
         mainWindow->menuWidget()->hide();
         mainWindow->showFullScreen();
         resizeImage(m_scaleMode, m_percentage);
+        return;
     }
+    
 }
 
 bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
@@ -227,7 +234,10 @@ bool ImageViewContainer::eventFilter(QObject* watched, QEvent* event) {
 
     if (event->type() == QEvent::KeyRelease) {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_F) { 
+        if (keyEvent->key() == Qt::Key_Escape) {
+            toggleFullScreen(true);
+        }
+        else if (keyEvent->key() == Qt::Key_F) { 
 			toggleFullScreen();
         }
         else if (keyEvent->key() == Qt::Key_PageDown) {

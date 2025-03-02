@@ -14,21 +14,21 @@ TextToolBar::TextToolBar(QWidget* parent, TextViewContainer* textViewContainer)
 	setMovable(true);
 
 	//text setting
-	QAction* settingAction = new QAction(QIcon(":/path/to/icon.png"), "Setting", this);
+	QAction* settingAction = new QAction(QIcon(":/icon/resources/icon/settings_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "Setting", this);
 	connect(settingAction, &QAction::triggered, this, [this, textViewContainer]() {
 		openSettingDialog(textViewContainer);
 		});
 	this->addAction(settingAction);
 
 	//text search
-	QAction* searchAction = new QAction(QIcon(":/path/to/icon.png"), "Search", this);
+	QAction* searchAction = new QAction(QIcon(":/icon/resources/icon/find_in_page_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "Search", this);
 	connect(searchAction, &QAction::triggered, this, [this, textViewContainer]() {
 		openSearchDialog(textViewContainer);
 		});
 	this->addAction(searchAction);
 
 	//container split
-	QAction* splitAction = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
+	QAction* splitAction = new QAction(QIcon(":/icon/resources/icon/auto_stories_24dp_1F1F1F.svg"), "Split", this);
 	this->addAction(splitAction);
 	connect(splitAction, &QAction::triggered, this, [this, textViewContainer]() {
 		textViewContainer->changeSplitView();
@@ -36,7 +36,7 @@ TextToolBar::TextToolBar(QWidget* parent, TextViewContainer* textViewContainer)
 		});
 
 	//delete file
-	QAction* deleteAction = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
+	QAction* deleteAction = new QAction(QIcon(":/icon/resources/icon/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "delete", this);
 	connect(deleteAction, &QAction::triggered, this, [this, textViewContainer]() {
 		textViewContainer->deleteFile(textViewContainer->getFileInfo());
 		});

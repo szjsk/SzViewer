@@ -39,49 +39,49 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
 
 
 
-    QAction* plusAction = new QAction(QIcon(":/path/to/icon.png"), "+", this);
+    QAction* plusAction = new QAction(QIcon(":/icon/resources/icon/zoom_in_24dp_1F1F1F.svg"), "+", this);
     plusAction->setToolTip("Zoom in 10% of original size 10% (+)");
     connect(plusAction, &QAction::triggered, this, [this]() {resizeEvent(ImageView::ScaleByPercentage, 1);});
     this->addAction(plusAction);
 
-    QAction* minusAction = new QAction(QIcon(":/path/to/icon.png"), "-", this);
+    QAction* minusAction = new QAction(QIcon(":/icon/resources/icon/zoom_out_24dp_1F1F1F.svg"), "-", this);
     minusAction->setToolTip("Zoom out 10% of original size 10% (+)");
     connect(minusAction, &QAction::triggered, this, [this]() {resizeEvent(ImageView::ScaleByPercentage, -1);});
     this->addAction(minusAction);
 
-    QAction* move1Action = new QAction(QIcon(":/path/to/icon.png"), "<<<", this);
+    QAction* move1Action = new QAction(QIcon(":/icon/resources/icon/fast_rewind_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "<<<", this);
     move1Action->setToolTip("prev folder (PAGE UP)");
     connect(move1Action, &QAction::triggered, this, [this]() {move(ImageView::PrevFolder);});
     this->addAction(move1Action);
 
-    QAction* move2Action = new QAction(QIcon(":/path/to/icon.png"), "<<", this);
+    QAction* move2Action = new QAction(QIcon(":/icon/resources/icon/skip_previous_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "<<", this);
     move2Action->setToolTip("first file");
     connect(move2Action, &QAction::triggered, this, [this]() {move(ImageView::First);});
     this->addAction(move2Action);
 
-    QAction* move3Action = new QAction(QIcon(":/path/to/icon.png"), "<", this);
+    QAction* move3Action = new QAction(QIcon(":/icon/resources/icon/chevron_left_24dp_1F1F1F.svg"), "<", this);
     move3Action->setToolTip("prev file (<-)");
     connect(move3Action, &QAction::triggered, this, [this]() {move(ImageView::Prev);});
     this->addAction(move3Action);
 
-    QAction* move4Action = new QAction(QIcon(":/path/to/icon.png"), ">", this);
+    QAction* move4Action = new QAction(QIcon(":/icon/resources/icon/chevron_right_24dp_1F1F1F.svg"), ">", this);
     move4Action->setToolTip("next file (->)");
     connect(move4Action, &QAction::triggered, this, [this]() {move(ImageView::Next);});
     this->addAction(move4Action);
 
-    QAction* move5Action = new QAction(QIcon(":/path/to/icon.png"), ">>", this);
+    QAction* move5Action = new QAction(QIcon(":/icon/resources/icon/skip_next_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), ">>", this);
     move5Action->setToolTip("last file");
     connect(move5Action, &QAction::triggered, this, [this]() {move(ImageView::Last);});
     this->addAction(move5Action);
 
-    QAction* move6Action = new QAction(QIcon(":/path/to/icon.png"), ">>>", this);
+    QAction* move6Action = new QAction(QIcon(":/icon/resources/icon/fast_forward_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), ">>>", this);
     move6Action->setToolTip("next folder (PAGE DOWN)");
     connect(move6Action, &QAction::triggered, this, [this]() {move(ImageView::NextFolder);});
     this->addAction(move6Action);
 
 
     //for split
-    QAction* splitAction = new QAction(QIcon(":/path/to/icon.png"), "Split", this);
+    QAction* splitAction = new QAction(QIcon(":/icon/resources/icon/auto_stories_24dp_1F1F1F.svg"), "Split", this);
     splitAction->setToolTip("split page");
     this->addAction(splitAction);
 
@@ -92,7 +92,14 @@ ImageToolBar::ImageToolBar(QWidget* parent, ImageViewContainer* imageViewContain
         StatusStore::instance().saveImageSettings(setting);
         });
 
-    QAction* deleteAction = new QAction(QIcon(":/path/to/icon.png"), "delete", this);
+
+    QAction* fullScreenAction = new QAction(QIcon(":/icon/resources/icon/zoom_out_map_24dp_1F1F1F.svg"), "full-screan", this);
+    fullScreenAction->setToolTip("Full Screen (f)");
+    connect(fullScreenAction, &QAction::triggered, this, [this]() {m_imageViewContainer->toggleFullScreen();});
+    this->addAction(fullScreenAction);
+
+
+    QAction* deleteAction = new QAction(QIcon(":/icon/resources/icon/delete_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg"), "delete", this);
     deleteAction->setToolTip("delete file or folder (del)");
     connect(deleteAction, &QAction::triggered, this, [this]() {m_imageViewContainer->deleteImageFile();});
     this->addAction(deleteAction);

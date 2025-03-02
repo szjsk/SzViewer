@@ -8,11 +8,12 @@ AboutDialog::AboutDialog(QWidget* parent)
 	setFixedSize(400, 500);
     //f:\qt\6.8.2\msvc2022_64\bin\windeployqt6.exe
     // - 이미지 단축키 설정 추가
+    //     // - 이미지 뷰어 fitwindow 시 두개 뷰어 왼쪽 오른쪽 정렬 추가. 2
+    // - 이미지 뷰어 회전기능 추가 3
+    // 
     // - 파일 그룹화 기능 추가 (파일 삭제, 일괄 이름 변경을 위한 그룹)
-    // - 압축파일 지원(리팩토링 추가)
-    // - 이미지 뷰어 fitwindow 시 두개 뷰어 왼쪽 오른쪽 정렬 추가.
-    // - 이미지 뷰어 회전기능 추가
-    // - 이미지 전체화면 기능 추가
+    // - 압축파일 지원(리팩토링 추가) 1
+
     const QString titleText = R"(
        <h2>SzViewer</h2>
     )";
